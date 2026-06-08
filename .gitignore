@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Large ML files and datasets
+ML/data/
+ML/saved_models/
+Datasets/
+venv_old/
+Backend/venv/
+Backend/.venv/
+
+# Model weights
+*.pt
+*.pth
+*.h5
+*.pkl
+*.joblib
