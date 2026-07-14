@@ -31,7 +31,7 @@ def run_pipeline(image_bgr: np.ndarray) -> dict:
             logger.warning(f"Skipping detection due to crop error: {e}")
             continue
 
-        classification = classify_crop(crop)
+        classification = classify_crop(crop, det_confidence=det["det_confidence"])
 
         if DEBUG_SAVE_CROPS:
             ch, cw = crop.shape[:2]

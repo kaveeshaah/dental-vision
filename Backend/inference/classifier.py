@@ -36,8 +36,8 @@ def preprocess_crop(crop_bgr: np.ndarray) -> np.ndarray:
     return np.expand_dims(x, axis=0)
 
 
-def classify_crop(crop_bgr: np.ndarray, conf_threshold: float = None) -> dict:
-    
+def classify_crop(crop_bgr: np.ndarray, conf_threshold: float = None, det_confidence: float = None) -> dict:
+
     threshold = conf_threshold if conf_threshold is not None else CLASSIFIER_CONF_THRESHOLD
 
     x = preprocess_crop(crop_bgr)
@@ -47,10 +47,13 @@ def classify_crop(crop_bgr: np.ndarray, conf_threshold: float = None) -> dict:
     confidence = float(preds[class_idx])
     label = CLASS_NAMES.get(class_idx, f"UNKNOWN_CLASS_{class_idx}")
 
+    classifier_unsure = confidence < threshold
+    detection_weak = det_confidence is not None and det_confidence < 0.3
+
     return {
         "label": label,
         "confidence": confidence,
-        "low_confidence": confidence < threshold,
+        "low_confidence": classifier_unsure or detection_weak,
     }
 
 

@@ -12,7 +12,7 @@ CLASSIFIER_MODEL_PATH = Path(
     os.getenv("CLASSIFIER_MODEL_PATH", BASE_DIR / "models" / "best_model.keras")
 )
 
-YOLO_CONF_THRESHOLD = float(os.getenv("YOLO_CONF_THRESHOLD", 0.25))
+YOLO_CONF_THRESHOLD = float(os.getenv("YOLO_CONF_THRESHOLD", 0.2))
 CLASSIFIER_CONF_THRESHOLD = float(os.getenv("CLASSIFIER_CONF_THRESHOLD", 0.5))
 
 IMG_SIZE = (224, 224)
