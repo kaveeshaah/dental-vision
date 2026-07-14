@@ -1,34 +1,40 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-export default function Login() {
-  const [username, setUsername] = useState('')
+export default function Register() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!username.trim() || !password.trim()) {
-      setError('Please fill in all clinical credentials.')
+    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      setError('Please fill in all fields.')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
       return
     }
 
     setError('')
     setIsSubmitting(true)
-    // Mock authentication delay
+    // Mock registration delay
     setTimeout(() => {
       setIsSubmitting(false)
-      navigate('/')
+      navigate('/login')
     }, 1000)
   }
 
   return (
     <div className="min-h-screen bg-sand text-bark-soft flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans grain">
       {/* Organic canopy shapes */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blob bg-fern/15 blur-[120px] pointer-events-none animate-sway" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blob-alt bg-clay/10 blur-[120px] pointer-events-none animate-soft-pulse" />
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] blob bg-fern/15 blur-[120px] pointer-events-none animate-sway" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] blob-alt bg-clay/10 blur-[120px] pointer-events-none animate-soft-pulse" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo and Home Link */}
@@ -45,9 +51,10 @@ export default function Login() {
           </Link>
         </div>
 
-        {/* Login Card */}
+        {/* Register Card */}
         <div className="bg-paper border border-line rounded-3xl p-8 shadow-lg relative overflow-hidden">
-          <h2 className="font-display text-xl font-semibold text-moss mb-6">Clinician Sign In</h2>
+          <h2 className="font-display text-xl font-semibold text-moss mb-1">Create Your Account</h2>
+          <p className="text-sm text-bark-soft/60 mb-6">Join DentalVision to start analyzing scans.</p>
 
           {error && (
             <div className="p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs mb-4 flex items-center gap-2">
@@ -60,13 +67,25 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-bark-soft/60">Username / ID</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-bark-soft/60">Full Name</label>
               <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 disabled={isSubmitting}
-                placeholder="e.g. Dr. Alex"
+                placeholder="Dr. Alex Rivera"
+                className="w-full bg-sand border border-line rounded-2xl px-4 py-3 text-sm text-bark placeholder-bark-soft/40 focus:outline-none focus:border-sage/50 transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-bark-soft/60">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="alex@clinic.com"
                 className="w-full bg-sand border border-line rounded-2xl px-4 py-3 text-sm text-bark placeholder-bark-soft/40 focus:outline-none focus:border-sage/50 transition-colors"
               />
             </div>
@@ -83,6 +102,18 @@ export default function Login() {
               />
             </div>
 
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-bark-soft/60">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="••••••••"
+                className="w-full bg-sand border border-line rounded-2xl px-4 py-3 text-sm text-bark placeholder-bark-soft/40 focus:outline-none focus:border-sage/50 transition-colors"
+              />
+            </div>
+
             <button
               type="submit"
               disabled={isSubmitting}
@@ -91,13 +122,20 @@ export default function Login() {
               {isSubmitting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-paper border-t-transparent rounded-full animate-spin" />
-                  <span>Verifying...</span>
+                  <span>Creating account...</span>
                 </>
               ) : (
-                <span>Sign In</span>
+                <span>Create Account</span>
               )}
             </button>
           </form>
+
+          <p className="text-center text-xs text-bark-soft/60 mt-6">
+            Already have an account?{' '}
+            <Link to="/login" className="text-clay font-semibold hover:text-clay-light transition-colors">
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>
