@@ -1,108 +1,51 @@
-import { useState } from 'react'
-import xrayImg from '../../../assets/panoramic_xray.png'
+import { useState, useRef, type DragEvent, type ChangeEvent } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { predictXray, type PredictResponse } from '../../../api'
 
-interface Detection {
-  id: number
-  label: string
-  type: 'caries' | 'lesion' | 'restoration' | 'impacted'
-  confidence: number
-  top: string // percentage
-  left: string // percentage
-  width: string // percentage
-  height: string // percentage
-}
-
-const mockDetections: Detection[] = [
-  {
-    id: 1,
-    label: 'Caries (Tooth #18)',
-    type: 'caries',
-    confidence: 89,
-    top: '48%',
-    left: '18%',
-    width: '5%',
-    height: '8%',
-  },
-  {
-    id: 2,
-    label: 'Impacted Tooth #32',
-    type: 'impacted',
-    confidence: 97,
-    top: '56%',
-    left: '79%',
-    width: '8%',
-    height: '18%',
-  },
-  {
-    id: 3,
-    label: 'Dental Crown (Tooth #14)',
-    type: 'restoration',
-    confidence: 99,
-    top: '34%',
-    left: '64%',
-    width: '6%',
-    height: '11%',
-  },
-  {
-    id: 4,
-    label: 'Restoration Fillings (Tooth #30)',
-    type: 'restoration',
-    confidence: 94,
-    top: '56%',
-    left: '26%',
-    width: '6%',
-    height: '9%',
-  },
-  {
-    id: 5,
-    label: 'Periapical Lesion (Tooth #9 root)',
-    type: 'lesion',
-    confidence: 76,
-    top: '24%',
-    left: '46%',
-    width: '5%',
-    height: '10%',
-  },
-  {
-    id: 6,
-    label: 'Incipient Caries (Tooth #4)',
-    type: 'caries',
-    confidence: 62,
-    top: '30%',
-    left: '32%',
-    width: '4.5%',
-    height: '7%',
-  },
-]
-
-const typeConfig = {
-  caries: {
+const typeConfig: Record<string, { color: string; dotColor: string; title: string }> = {
+  Caries: {
     color: 'border-red-500 bg-red-500/15 text-red-500',
     dotColor: 'bg-red-500',
     title: 'Caries / Decay',
   },
-  lesion: {
+  Periapical_Lesion: {
     color: 'border-orange-500 bg-orange-500/15 text-orange-600',
     dotColor: 'bg-orange-500',
-    title: 'Periapical Lesions',
+    title: 'Periapical Lesion',
   },
-  restoration: {
-    color: 'border-yellow-500 bg-yellow-500/15 text-yellow-600',
-    dotColor: 'bg-yellow-500',
-    title: 'Crowns & Fillings',
-  },
-  impacted: {
+  Impacted_Tooth: {
     color: 'border-indigo-500 bg-indigo-500/15 text-indigo-600',
     dotColor: 'bg-indigo-500',
-    title: 'Impacted Teeth',
+    title: 'Impacted Tooth',
+  },
+  Missing_Teeth: {
+    color: 'border-yellow-500 bg-yellow-500/15 text-yellow-600',
+    dotColor: 'bg-yellow-500',
+    title: 'Missing Teeth',
+  },
+  Bone_Loss: {
+    color: 'border-fuchsia-500 bg-fuchsia-500/15 text-fuchsia-600',
+    dotColor: 'bg-fuchsia-500',
+    title: 'Bone Loss',
   },
 }
 
+const ALL_TYPES = Object.keys(typeConfig)
+const MAX_FILE_SIZE_MB = 10
+const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png']
+
 export default function InteractiveDemo() {
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(['caries', 'lesion', 'restoration', 'impacted'])
-  const [confidenceThreshold, setConfidenceThreshold] = useState<number>(60)
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(ALL_TYPES)
+  const [confidenceThreshold, setConfidenceThreshold] = useState<number>(50)
   const [hoveredBox, setHoveredBox] = useState<number | null>(null)
-  const [imageLoaded, setImageLoaded] = useState<boolean>(false)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [fileError, setFileError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const mutation = useMutation<PredictResponse, Error, File>({
+    mutationFn: predictXray,
+  })
 
   const toggleType = (type: string) => {
     setSelectedTypes(prev =>
@@ -110,20 +53,55 @@ export default function InteractiveDemo() {
     )
   }
 
-  const filteredDetections = mockDetections.filter(
-    item => selectedTypes.includes(item.type) && item.confidence >= confidenceThreshold
+  const validateAndUpload = (file: File) => {
+    setFileError(null)
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setFileError('Please upload a JPEG or PNG image.')
+      return
+    }
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setFileError(`File is too large. Max size is ${MAX_FILE_SIZE_MB}MB.`)
+      return
+    }
+
+    // Revoke any previous object URL to avoid leaking memory across uploads.
+    if (imageUrl) URL.revokeObjectURL(imageUrl)
+    setImageUrl(URL.createObjectURL(file))
+
+    mutation.mutate(file)
+  }
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) validateAndUpload(file)
+    e.target.value = '' // allow re-selecting the same file
+  }
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) validateAndUpload(file)
+  }
+
+  const predictions = mutation.data?.predictions ?? []
+  const imageDimensions = mutation.data?.image_dimensions
+
+  const filteredDetections = predictions.filter(
+    p => selectedTypes.includes(p.disease_label) && p.confidence * 100 >= confidenceThreshold
   )
 
   return (
-    <section id="demo" className="py-20 relative bg-slate-100/60 border-t border-b border-slate-200">
-      <div className="absolute top-0 right-0 w-[40%] h-[40%] rounded-full bg-teal-500/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[40%] h-[40%] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
+    <section id="demo" className="py-20 relative bg-paper border-t border-b border-line grain">
+      <div className="absolute top-0 right-0 w-[40%] h-[40%] blob bg-fern/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[40%] h-[40%] blob-alt bg-clay/10 blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-sm font-semibold tracking-wider text-teal-600 uppercase mb-3">Live Sandbox</h2>
-          <p className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-sm font-semibold tracking-wider text-clay uppercase mb-3">Live Sandbox</h2>
+          <p className="font-display text-3xl md:text-4xl font-semibold text-moss mb-4">
             Interactive Diagnostic Dashboard
           </p>
         </div>
@@ -133,9 +111,9 @@ export default function InteractiveDemo() {
           {/* Left Panel: Controls */}
           <div className="lg:col-span-4 space-y-6">
             {/* Control Panel Card */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-6">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-4">
-                <svg className="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <div className="p-6 rounded-3xl bg-paper border border-line shadow-sm space-y-6">
+              <h3 className="text-lg font-bold text-bark flex items-center gap-2 border-b border-line pb-4">
+                <svg className="w-5 h-5 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
                 Inference Controls
@@ -143,34 +121,38 @@ export default function InteractiveDemo() {
 
               {/* Pathology Filters */}
               <div className="space-y-3">
-                <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">
+                <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block">
                   Pathology Categories
                 </label>
                 <div className="space-y-2">
                   {Object.entries(typeConfig).map(([type, config]) => {
                     const isChecked = selectedTypes.includes(type)
+                    const count = mutation.data?.summary.by_class[type] ?? 0
                     return (
                       <button
                         key={type}
                         onClick={() => toggleType(type)}
-                        className={`w-full flex items-center justify-between p-3 rounded-xl border text-sm font-medium transition-all duration-200 ${
-                          isChecked
-                            ? 'bg-slate-50 border-slate-200 text-slate-800'
-                            : 'bg-transparent border-slate-100/50 text-slate-400 hover:border-slate-200 hover:bg-slate-50'
-                        }`}
+                        className={`w-full flex items-center justify-between p-3 rounded-2xl border text-sm font-medium transition-all duration-200 ${isChecked
+                          ? 'bg-sand border-line text-bark'
+                          : 'bg-transparent border-line/50 text-bark-soft/50 hover:border-line hover:bg-sand'
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <span className={`w-2.5 h-2.5 rounded-full ${config.dotColor}`} />
                           <span>{config.title}</span>
                         </div>
-                        <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${
-                          isChecked ? 'bg-teal-600 border-teal-600 text-white' : 'border-slate-300'
-                        }`}>
-                          {isChecked && (
-                            <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
+                        <div className="flex items-center gap-2">
+                          {mutation.isSuccess && count > 0 && (
+                            <span className="text-xs font-bold text-bark-soft/50">{count}</span>
                           )}
+                          <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${isChecked ? 'bg-sage border-sage text-paper' : 'border-line'
+                            }`}>
+                            {isChecked && (
+                              <svg className="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
                         </div>
                       </button>
                     )
@@ -181,113 +163,177 @@ export default function InteractiveDemo() {
               {/* Confidence Threshold Slider */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
+                  <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold">
                     Confidence Threshold
                   </label>
-                  <span className="text-sm font-bold text-teal-600">{confidenceThreshold}%</span>
+                  <span className="text-sm font-bold text-clay">{confidenceThreshold}%</span>
                 </div>
                 <input
                   type="range"
-                  min="50"
+                  min="0"
                   max="99"
                   value={confidenceThreshold}
                   onChange={(e) => setConfidenceThreshold(Number(e.target.value))}
-                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                  className="w-full h-1.5 bg-line rounded-lg appearance-none cursor-pointer accent-clay"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                  <span>50% (Recall)</span>
+                <div className="flex justify-between text-[10px] text-bark-soft/50 font-semibold uppercase tracking-wider">
+                  <span>0% (Recall)</span>
                   <span>99% (Precision)</span>
                 </div>
               </div>
             </div>
 
-            {/* Simulated Upload Area */}
-            <div className="p-6 rounded-2xl border border-dashed border-slate-300 bg-white hover:border-teal-500/50 hover:bg-slate-50/50 transition-colors duration-300 group cursor-pointer text-center relative overflow-hidden shadow-sm">
-              <input type="file" className="hidden" disabled />
+            {/* Upload Area -- real, functional */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={`p-6 rounded-3xl border border-dashed transition-colors duration-300 group cursor-pointer text-center relative overflow-hidden shadow-sm ${isDragging
+                ? 'border-sage bg-fern/10'
+                : 'border-line bg-paper hover:border-sage/50 hover:bg-sand/50'
+                }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png"
+                className="hidden"
+                onChange={handleFileChange}
+              />
               <div className="py-6 flex flex-col items-center justify-center">
-                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
-                  <svg className="w-6 h-6 text-slate-400 group-hover:text-teal-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <div className="w-12 h-12 blob bg-sand border border-line flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-bark-soft/50 group-hover:text-sage transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
                 </div>
-                <p className="text-sm font-semibold text-slate-700 mb-1">
-                  Upload Panoramic X-Ray
+                <p className="text-sm font-semibold text-bark mb-1">
+                  {imageUrl ? 'Upload a Different X-Ray' : 'Upload Panoramic X-Ray'}
                 </p>
-                <p className="text-xs text-slate-400">
-                  Supports DICOM, JPEG, or PNG up to 10MB
+                <p className="text-xs text-bark-soft/50">
+                  Supports JPEG or PNG up to {MAX_FILE_SIZE_MB}MB
                 </p>
               </div>
             </div>
+
+            {fileError && (
+              <div className="p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs flex items-center gap-2">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{fileError}</span>
+              </div>
+            )}
+
+            {mutation.isError && (
+              <div className="p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs flex items-center gap-2">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Analysis failed. Confirm the backend is running and try again.</span>
+              </div>
+            )}
           </div>
 
           {/* Right Panel: Interactive Canvas */}
           <div className="lg:col-span-8">
-            <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-lg p-4">
-              
+            <div className="relative rounded-3xl overflow-hidden border border-line bg-paper shadow-lg p-4">
+
               {/* Top Canvas Stats Overlay */}
-              <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-3 px-1">
+              <div className="flex justify-between items-center mb-4 border-b border-line pb-3 px-1">
                 <div className="flex items-center gap-2">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-semibold text-slate-600 tracking-wide uppercase">Panoramic View #2481-A</span>
+                  <span className={`inline-block w-2.5 h-2.5 rounded-full ${mutation.isPending ? 'bg-clay animate-pulse' : 'bg-fern'
+                    }`} />
+                  <span className="text-xs font-semibold text-bark-soft tracking-wide uppercase">
+                    {mutation.isPending ? 'Analyzing...' : imageUrl ? 'Panoramic View' : 'No Image Loaded'}
+                  </span>
                 </div>
-                <div className="text-xs text-slate-600 font-semibold bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
-                  Detections: <span className="text-teal-600 font-bold">{filteredDetections.length}</span>
-                </div>
+                {mutation.isSuccess && (
+                  <div className="text-xs text-bark-soft font-semibold bg-sand px-2.5 py-1 rounded-full border border-line">
+                    Detections: <span className="text-clay font-bold">{filteredDetections.length}</span>
+                  </div>
+                )}
               </div>
 
               {/* Main Image Viewport */}
-              <div className="relative overflow-hidden rounded-xl bg-slate-900 border border-slate-100 aspect-[1.85/1]">
-                <img
-                  src={xrayImg}
-                  alt="Panoramic X-Ray"
-                  onLoad={() => setImageLoaded(true)}
-                  className={`w-full h-full object-cover select-none brightness-[0.8] contrast-[1.1] transition-opacity duration-300 ${
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-                {!imageLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                    Loading medical imaging asset...
+              <div
+                className="relative overflow-hidden rounded-2xl bg-moss border border-line"
+                style={
+                  imageDimensions
+                    ? { aspectRatio: `${imageDimensions.width} / ${imageDimensions.height}` }
+                    : { aspectRatio: '1.85 / 1' }
+                }
+              >
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt="Uploaded Panoramic X-Ray"
+                    className={`w-full h-full object-contain select-none transition-opacity duration-300 ${mutation.isPending ? 'opacity-50' : 'opacity-100'
+                      }`}
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-sand/60 gap-2">
+                    <svg className="w-10 h-10 text-sand/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h.01M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                    </svg>
+                    <p className="text-xs">Upload an X-ray to begin analysis</p>
                   </div>
                 )}
 
-                {/* Absolute overlay for YOLO Detection Bounding Boxes */}
-                {filteredDetections.map((box) => {
-                  const confColor = typeConfig[box.type]
-                  const isHovered = hoveredBox === box.id
+                {mutation.isPending && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-moss/60">
+                    <div className="flex flex-col items-center gap-3">
+                      <span className="w-8 h-8 border-2 border-sand border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sand text-xs font-semibold">Running inference...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Absolute overlay for real YOLO + classifier detections */}
+                {imageDimensions && filteredDetections.map((detection, i) => {
+                  const config = typeConfig[detection.disease_label]
+                  if (!config) return null // unknown label -- skip rather than crash
+
+                  const [x1, y1, x2, y2] = detection.bbox
+                  const top = `${(y1 / imageDimensions.height) * 100}%`
+                  const left = `${(x1 / imageDimensions.width) * 100}%`
+                  const width = `${((x2 - x1) / imageDimensions.width) * 100}%`
+                  const height = `${((y2 - y1) / imageDimensions.height) * 100}%`
+                  const isHovered = hoveredBox === i
+                  const confidencePct = Math.round(detection.confidence * 100)
 
                   return (
                     <div
-                      key={box.id}
-                      style={{
-                        top: box.top,
-                        left: box.left,
-                        width: box.width,
-                        height: box.height,
-                      }}
-                      onMouseEnter={() => setHoveredBox(box.id)}
+                      key={i}
+                      style={{ top, left, width, height }}
+                      onMouseEnter={() => setHoveredBox(i)}
                       onMouseLeave={() => setHoveredBox(null)}
-                      className={`absolute border-2 rounded transition-all duration-150 cursor-pointer group ${confColor.color} ${
-                        isHovered ? 'scale-105 shadow-lg border-white ring-2 ring-white/10 z-30' : 'z-20'
-                      }`}
+                      className={`absolute border-2 rounded transition-all duration-150 cursor-pointer group ${config.color} ${detection.low_confidence ? 'border-dashed' : ''
+                        } ${isHovered ? 'scale-105 shadow-lg border-white ring-2 ring-white/10 z-30' : 'z-20'
+                        }`}
                     >
                       {/* Box Label Indicator */}
-                      <div className="absolute top-0 left-0 -translate-y-full bg-slate-900 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-t border-t border-x border-slate-700 scale-90 group-hover:scale-100 origin-bottom-left transition-transform duration-150 pointer-events-none whitespace-nowrap shadow-md">
-                        T{box.id} {box.confidence}%
+                      <div className="absolute top-0 left-0 -translate-y-full bg-moss text-[10px] font-bold text-sand px-1.5 py-0.5 rounded-t border-t border-x border-moss/70 scale-90 group-hover:scale-100 origin-bottom-left transition-transform duration-150 pointer-events-none whitespace-nowrap shadow-md">
+                        {confidencePct}%
                       </div>
 
                       {/* Floating tooltip */}
                       {isHovered && (
-                        <div className="absolute top-[110%] left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl text-slate-200 text-xs w-48 z-40 space-y-1 pointer-events-none text-left font-sans">
-                          <p className="font-bold text-white border-b border-slate-700 pb-1 mb-1">{box.label}</p>
-                          <p className="flex justify-between text-slate-400">
-                            <span>Category:</span>
-                            <span className="font-semibold text-teal-400 capitalize">{box.type}</span>
+                        <div className="absolute top-[110%] left-1/2 -translate-x-1/2 bg-moss border border-moss/70 p-3 rounded-xl shadow-xl text-sand/80 text-xs w-48 z-40 space-y-1 pointer-events-none text-left font-sans">
+                          <p className="font-bold text-sand border-b border-sand/20 pb-1 mb-1">{config.title}</p>
+                          <p className="flex justify-between text-sand/60">
+                            <span>Classifier Conf:</span>
+                            <span className="font-semibold text-fern">{confidencePct}%</span>
                           </p>
-                          <p className="flex justify-between text-slate-400">
-                            <span>Model Conf:</span>
-                            <span className="font-semibold text-emerald-400">{box.confidence}%</span>
+                          <p className="flex justify-between text-sand/60">
+                            <span>Detection Conf:</span>
+                            <span className="font-semibold text-fern">
+                              {Math.round(detection.detection_confidence * 100)}%
+                            </span>
                           </p>
+                          {detection.low_confidence && (
+                            <p className="text-clay-light font-semibold pt-1">⚠ Low confidence finding</p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -296,18 +342,19 @@ export default function InteractiveDemo() {
               </div>
 
               {/* Bottom Info Banner */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 px-1 pt-1">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-xs text-bark-soft/60 px-1 pt-1">
                 <p className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-teal-600/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <svg className="w-4 h-4 text-sage/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Hover over bounding boxes on the X-ray image for clinical details.
+                  Hover over bounding boxes on the X-ray image for details. Dashed borders indicate lower-confidence findings.
                 </p>
-                <div className="flex gap-4">
-                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-red-500 rounded-full" /> Caries</span>
-                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-orange-500 rounded-full" /> Lesion</span>
-                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-yellow-500 rounded-full" /> Restoration</span>
-                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" /> Impacted</span>
+                <div className="flex flex-wrap gap-4">
+                  {Object.entries(typeConfig).map(([type, config]) => (
+                    <span key={type} className="flex items-center gap-1">
+                      <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} /> {config.title}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
