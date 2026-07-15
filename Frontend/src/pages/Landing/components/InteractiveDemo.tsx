@@ -1,6 +1,7 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { predictXray, type PredictResponse } from '../../../api'
+import { useAuthStore } from '../../../store/authStore'
 
 const typeConfig: Record<string, { color: string; dotColor: string; title: string }> = {
   Caries: {
@@ -41,6 +42,8 @@ export default function InteractiveDemo() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [fileError, setFileError] = useState<string | null>(null)
+  
+  const isAuthenticated = useAuthStore((state) => !!state.token)
   
   // Patient detail states
   const [isExistingPatient, setIsExistingPatient] = useState(false)
@@ -125,47 +128,64 @@ export default function InteractiveDemo() {
                   <svg className="w-5 h-5 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  Patient & Scan
+                  {isAuthenticated ? 'Patient & Scan' : 'Upload Scan'}
                 </h3>
 
                 {/* Toggle switch for Existing Patient */}
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${!isExistingPatient ? 'text-clay' : 'text-bark-soft/50'}`}>New</span>
-                  <div className="relative">
-                    <input type="checkbox" className="sr-only" checked={isExistingPatient} onChange={(e) => setIsExistingPatient(e.target.checked)} />
-                    <div className={`block w-10 h-6 rounded-full transition-colors ${isExistingPatient ? 'bg-sage' : 'bg-line'}`}></div>
-                    <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isExistingPatient ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                  </div>
-                  <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${isExistingPatient ? 'text-sage' : 'text-bark-soft/50'}`}>Existing</span>
-                </label>
+                {isAuthenticated && (
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${!isExistingPatient ? 'text-clay' : 'text-bark-soft/50'}`}>New</span>
+                    <div className="relative">
+                      <input type="checkbox" className="sr-only" checked={isExistingPatient} onChange={(e) => setIsExistingPatient(e.target.checked)} />
+                      <div className={`block w-10 h-6 rounded-full transition-colors ${isExistingPatient ? 'bg-sage' : 'bg-line'}`}></div>
+                      <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isExistingPatient ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                    </div>
+                    <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${isExistingPatient ? 'text-sage' : 'text-bark-soft/50'}`}>Existing</span>
+                  </label>
+                )}
               </div>
 
-              <div className="space-y-3 relative">
-                {/* Optional overlay if existing patient selected to dim out the Name/Age fields */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">
-                      {isExistingPatient ? 'Search Patient ID' : 'Patient ID'}
-                    </label>
-                    <input
-                      type="text"
-                      disabled={!isExistingPatient}
-                      value={isExistingPatient ? searchId : patientId}
-                      onChange={(e) => setSearchId(e.target.value)}
-                      placeholder={isExistingPatient ? "e.g. PT-1002" : ""}
-                      className={`w-full border rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus:border-sage/50 ${
-                        !isExistingPatient 
-                          ? 'bg-sand border-line text-bark-soft/60 cursor-not-allowed' 
-                          : 'bg-paper border-line text-bark placeholder-bark-soft/40'
-                      }`}
-                    />
+              {isAuthenticated ? (
+                <div className="space-y-3 relative">
+                  {/* Optional overlay if existing patient selected to dim out the Name/Age fields */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">
+                        {isExistingPatient ? 'Search Patient ID' : 'Patient ID'}
+                      </label>
+                      <input
+                        type="text"
+                        disabled={!isExistingPatient}
+                        value={isExistingPatient ? searchId : patientId}
+                        onChange={(e) => setSearchId(e.target.value)}
+                        placeholder={isExistingPatient ? "e.g. PT-1002" : ""}
+                        className={`w-full border rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus:border-sage/50 ${
+                          !isExistingPatient 
+                            ? 'bg-sand border-line text-bark-soft/60 cursor-not-allowed' 
+                            : 'bg-paper border-line text-bark placeholder-bark-soft/40'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Age</label>
+                      <input
+                        type="number"
+                        disabled={isExistingPatient}
+                        placeholder={isExistingPatient ? "Auto-filled" : "e.g. 34"}
+                        className={`w-full border rounded-xl px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-sage/50 ${
+                          isExistingPatient
+                            ? 'bg-sand border-line text-transparent placeholder-bark-soft/30 cursor-not-allowed'
+                            : 'bg-sand border-line text-bark placeholder-bark-soft/40'
+                        }`}
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Age</label>
+                    <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Full Name</label>
                     <input
-                      type="number"
+                      type="text"
                       disabled={isExistingPatient}
-                      placeholder={isExistingPatient ? "Auto-filled" : "e.g. 34"}
+                      placeholder={isExistingPatient ? "Auto-filled on search" : "e.g. John Doe"}
                       className={`w-full border rounded-xl px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-sage/50 ${
                         isExistingPatient
                           ? 'bg-sand border-line text-transparent placeholder-bark-soft/30 cursor-not-allowed'
@@ -174,20 +194,11 @@ export default function InteractiveDemo() {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    disabled={isExistingPatient}
-                    placeholder={isExistingPatient ? "Auto-filled on search" : "e.g. John Doe"}
-                    className={`w-full border rounded-xl px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-sage/50 ${
-                      isExistingPatient
-                        ? 'bg-sand border-line text-transparent placeholder-bark-soft/30 cursor-not-allowed'
-                        : 'bg-sand border-line text-bark placeholder-bark-soft/40'
-                    }`}
-                  />
+              ) : (
+                <div className="bg-sand/50 p-4 rounded-2xl border border-line text-sm text-bark-soft/80 text-center shadow-sm">
+                  <span className="font-bold text-clay">Try the Analyzer!</span> Log in to save scans to real patient records.
                 </div>
-              </div>
+              )}
 
               {/* Upload Dropzone */}
               <div

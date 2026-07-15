@@ -58,6 +58,27 @@ export async function registerUser(userData: any): Promise<AuthResponse> {
   return response.data
 }
 
+// Patients
+
+export interface Patient {
+  id: number
+  custom_id: string
+  full_name: string
+  age: number
+  status: string
+  created_at: string
+}
+
+export async function getPatients(): Promise<Patient[]> {
+  const response = await api.get<Patient[]>('/patients')
+  return response.data
+}
+
+export async function createPatient(data: { full_name: string; age: number; custom_id?: string; status?: string }): Promise<Patient> {
+  const response = await api.post<Patient>('/patients', data)
+  return response.data
+}
+
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token
   if (token && config.headers) {
@@ -65,5 +86,16 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      useAuthStore.getState().logout()
+      window.location.href = '/'
+    }
+    return Promise.reject(error)
+  }
+)
 
 export default api
