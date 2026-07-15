@@ -11,6 +11,7 @@ export default defineConfig({
       '/health': 'http://localhost:5000',
       '/login': 'http://localhost:5000',
       '/register': 'http://localhost:5000',
+      '/patients': 'http://localhost:5000',
     },
   },
 })

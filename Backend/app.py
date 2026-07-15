@@ -1,8 +1,5 @@
-"""
-DentalVision Flask backend entrypoint.
-"""
-import logging
 
+import logging
 from flask import Flask
 from flask_cors import CORS
 
@@ -35,7 +32,8 @@ def create_app() -> Flask:
 
     with app.app_context():
         from models.user import User  # noqa: F401 -- registers model with SQLAlchemy
-        db.create_all()  # creates the users table if it doesn't exist yet
+        from models.patient import Patient  # noqa: F401 -- registers Patient model
+        db.create_all()  # creates the tables if they don't exist yet
 
     logger.info("Loading models...")
     from inference import detector, classifier  # noqa: F401
@@ -44,10 +42,12 @@ def create_app() -> Flask:
     from routes.predict import predict_bp
     from routes.health import health_bp
     from routes.auth import auth_bp
+    from routes.patients import patients_bp
 
     app.register_blueprint(predict_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(patients_bp)
 
     return app
 
