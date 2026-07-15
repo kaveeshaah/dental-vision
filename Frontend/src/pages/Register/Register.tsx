@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { registerUser } from '../../api'
+import { useAuthStore } from '../../store/authStore'
 
 export default function Register() {
   const [name, setName] = useState('')
@@ -23,11 +25,16 @@ export default function Register() {
 
     setError('')
     setIsSubmitting(true)
-    // Mock registration delay
-    setTimeout(() => {
+    
+    try {
+      const response = await registerUser({ username: name, email, password })
+      useAuthStore.getState().setAuth(response)
+      navigate('/')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to create account. Please try again.')
+    } finally {
       setIsSubmitting(false)
-      navigate('/login')
-    }, 1000)
+    }
   }
 
   return (
