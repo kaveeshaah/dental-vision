@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { useAuthStore } from './store/authStore'
+
 
 const api = axios.create()
 
@@ -34,5 +36,34 @@ export async function checkHealth() {
   const response = await api.get('/health')
   return response.data
 }
+
+// Authentication
+
+export interface AuthResponse {
+  user: {
+    id: number
+    username: string
+    email: string
+  }
+  access_token: string
+}
+
+export async function loginUser(credentials: any): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>('/login', credentials)
+  return response.data
+}
+
+export async function registerUser(userData: any): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>('/register', userData)
+  return response.data
+}
+
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().token
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
 export default api

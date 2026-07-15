@@ -41,6 +41,12 @@ export default function InteractiveDemo() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [fileError, setFileError] = useState<string | null>(null)
+  
+  // Patient detail states
+  const [isExistingPatient, setIsExistingPatient] = useState(false)
+  const [searchId, setSearchId] = useState('')
+  const [patientId] = useState(`PT-${Math.floor(1000 + Math.random() * 9000)}`)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const mutation = useMutation<PredictResponse, Error, File>({
@@ -99,19 +105,126 @@ export default function InteractiveDemo() {
 
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-sm font-semibold tracking-wider text-clay uppercase mb-3">Live Sandbox</h2>
-          <p className="font-display text-3xl md:text-4xl font-semibold text-moss mb-4">
-            Interactive Diagnostic Dashboard
-          </p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-line pb-6">
+          <div>
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-moss mb-2">Clinical Diagnostic Dashboard</h2>
+            <p className="text-sm text-bark-soft/80 max-w-xl">
+              Upload patient X-rays, assign them to records, and configure inference settings to generate automated insights.
+            </p>
+          </div>
         </div>
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Panel: Controls */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            {/* Patient Details & Upload */}
+            <div className={`p-6 rounded-3xl bg-paper border border-line shadow-sm space-y-5 transition-all duration-500 ${imageUrl ? 'order-2' : 'order-1'}`}>
+              <div className="flex items-center justify-between border-b border-line pb-4">
+                <h3 className="text-lg font-bold text-bark flex items-center gap-2">
+                  <svg className="w-5 h-5 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Patient & Scan
+                </h3>
+
+                {/* Toggle switch for Existing Patient */}
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${!isExistingPatient ? 'text-clay' : 'text-bark-soft/50'}`}>New</span>
+                  <div className="relative">
+                    <input type="checkbox" className="sr-only" checked={isExistingPatient} onChange={(e) => setIsExistingPatient(e.target.checked)} />
+                    <div className={`block w-10 h-6 rounded-full transition-colors ${isExistingPatient ? 'bg-sage' : 'bg-line'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isExistingPatient ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  </div>
+                  <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${isExistingPatient ? 'text-sage' : 'text-bark-soft/50'}`}>Existing</span>
+                </label>
+              </div>
+
+              <div className="space-y-3 relative">
+                {/* Optional overlay if existing patient selected to dim out the Name/Age fields */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">
+                      {isExistingPatient ? 'Search Patient ID' : 'Patient ID'}
+                    </label>
+                    <input
+                      type="text"
+                      disabled={!isExistingPatient}
+                      value={isExistingPatient ? searchId : patientId}
+                      onChange={(e) => setSearchId(e.target.value)}
+                      placeholder={isExistingPatient ? "e.g. PT-1002" : ""}
+                      className={`w-full border rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus:border-sage/50 ${
+                        !isExistingPatient 
+                          ? 'bg-sand border-line text-bark-soft/60 cursor-not-allowed' 
+                          : 'bg-paper border-line text-bark placeholder-bark-soft/40'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Age</label>
+                    <input
+                      type="number"
+                      disabled={isExistingPatient}
+                      placeholder={isExistingPatient ? "Auto-filled" : "e.g. 34"}
+                      className={`w-full border rounded-xl px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-sage/50 ${
+                        isExistingPatient
+                          ? 'bg-sand border-line text-transparent placeholder-bark-soft/30 cursor-not-allowed'
+                          : 'bg-sand border-line text-bark placeholder-bark-soft/40'
+                      }`}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Full Name</label>
+                  <input
+                    type="text"
+                    disabled={isExistingPatient}
+                    placeholder={isExistingPatient ? "Auto-filled on search" : "e.g. John Doe"}
+                    className={`w-full border rounded-xl px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-sage/50 ${
+                      isExistingPatient
+                        ? 'bg-sand border-line text-transparent placeholder-bark-soft/30 cursor-not-allowed'
+                        : 'bg-sand border-line text-bark placeholder-bark-soft/40'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Upload Dropzone */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                className={`p-6 rounded-2xl border border-dashed transition-colors duration-300 group cursor-pointer text-center relative overflow-hidden shadow-sm mt-4 ${isDragging
+                  ? 'border-sage bg-fern/10'
+                  : 'border-line bg-sand/30 hover:border-sage/50 hover:bg-sand'
+                  }`}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <div className="py-4 flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 blob bg-paper border border-line flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <svg className="w-5 h-5 text-bark-soft/50 group-hover:text-sage transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-semibold text-bark mb-1">
+                    {imageUrl ? 'Upload a Different X-Ray' : 'Upload Panoramic X-Ray'}
+                  </p>
+                  <p className="text-[11px] text-bark-soft/50">
+                    Supports JPEG or PNG up to {MAX_FILE_SIZE_MB}MB
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Control Panel Card */}
-            <div className="p-6 rounded-3xl bg-paper border border-line shadow-sm space-y-6">
+            <div className={`p-6 rounded-3xl bg-paper border border-line shadow-sm space-y-6 transition-all duration-500 ${imageUrl ? 'order-1' : 'order-2'}`}>
               <h3 className="text-lg font-bold text-bark flex items-center gap-2 border-b border-line pb-4">
                 <svg className="w-5 h-5 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -183,41 +296,8 @@ export default function InteractiveDemo() {
               </div>
             </div>
 
-            {/* Upload Area -- real, functional */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              className={`p-6 rounded-3xl border border-dashed transition-colors duration-300 group cursor-pointer text-center relative overflow-hidden shadow-sm ${isDragging
-                ? 'border-sage bg-fern/10'
-                : 'border-line bg-paper hover:border-sage/50 hover:bg-sand/50'
-                }`}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-              <div className="py-6 flex flex-col items-center justify-center">
-                <div className="w-12 h-12 blob bg-sand border border-line flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
-                  <svg className="w-6 h-6 text-bark-soft/50 group-hover:text-sage transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                </div>
-                <p className="text-sm font-semibold text-bark mb-1">
-                  {imageUrl ? 'Upload a Different X-Ray' : 'Upload Panoramic X-Ray'}
-                </p>
-                <p className="text-xs text-bark-soft/50">
-                  Supports JPEG or PNG up to {MAX_FILE_SIZE_MB}MB
-                </p>
-              </div>
-            </div>
-
             {fileError && (
-              <div className="p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs flex items-center gap-2">
+              <div className={`p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs flex items-center gap-2 order-3`}>
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -226,7 +306,7 @@ export default function InteractiveDemo() {
             )}
 
             {mutation.isError && (
-              <div className="p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs flex items-center gap-2">
+              <div className={`p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs flex items-center gap-2 order-3`}>
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuthStore } from '../../store/authStore'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const { user, logout } = useAuthStore()
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
@@ -24,22 +26,41 @@ export default function Navbar() {
           <a href="#features" className="hover:text-clay transition-colors duration-200">Features</a>
           <a href="#demo" className="hover:text-clay transition-colors duration-200">Interactive Demo</a>
           <a href="#how-it-works" className="hover:text-clay transition-colors duration-200">How It Works</a>
+          {user && (
+            <Link to="/patient-records" className="hover:text-clay transition-colors duration-200">Patient Records</Link>
+          )}
         </div>
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            to="/login"
-            className="px-4 py-2 rounded-full text-sm font-semibold text-bark-soft hover:text-moss transition-all"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/register"
-            className="px-5 py-2.5 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light shadow-md shadow-clay/20 hover:shadow-clay/30 transition-all duration-300 scale-100 hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Register
-          </Link>
+          {user ? (
+            <>
+              <span className="text-sm font-semibold text-moss px-4">
+                Dr. {user.username}
+              </span>
+              <button
+                onClick={logout}
+                className="px-5 py-2.5 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light shadow-md shadow-clay/20 hover:shadow-clay/30 transition-all duration-300 scale-100 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="px-4 py-2 rounded-full text-sm font-semibold text-bark-soft hover:text-moss transition-all"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                className="px-5 py-2.5 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light shadow-md shadow-clay/20 hover:shadow-clay/30 transition-all duration-300 scale-100 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Register
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Hamburger Menu */}
@@ -64,21 +85,43 @@ export default function Navbar() {
           <a href="#features" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Features</a>
           <a href="#demo" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Interactive Demo</a>
           <a href="#how-it-works" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">How It Works</a>
+          {user && (
+            <Link to="/patient-records" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Patient Records</Link>
+          )}
           <div className="flex flex-col gap-2 pt-3 border-t border-line">
-            <Link
-              to="/login"
-              onClick={() => setIsOpen(false)}
-              className="w-full text-center py-2.5 rounded-full text-sm font-semibold text-bark-soft hover:text-moss"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/register"
-              onClick={() => setIsOpen(false)}
-              className="w-full text-center px-5 py-2.5 rounded-full text-sm font-semibold text-paper bg-clay"
-            >
-              Register
-            </Link>
+            {user ? (
+              <>
+                <span className="w-full text-center py-2.5 text-sm font-semibold text-moss">
+                  Dr. {user.username}
+                </span>
+                <button
+                  onClick={() => {
+                    logout()
+                    setIsOpen(false)
+                  }}
+                  className="w-full text-center px-5 py-2.5 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full text-center py-2.5 rounded-full text-sm font-semibold text-bark-soft hover:text-moss transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full text-center px-5 py-2.5 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light transition-colors"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

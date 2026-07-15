@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { loginUser } from '../../api'
+import { useAuthStore } from '../../store/authStore'
 
 export default function Login() {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -10,18 +12,23 @@ export default function Login() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!username.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       setError('Please fill in all clinical credentials.')
       return
     }
 
     setError('')
     setIsSubmitting(true)
-    // Mock authentication delay
-    setTimeout(() => {
-      setIsSubmitting(false)
+    
+    try {
+      const response = await loginUser({ email, password })
+      useAuthStore.getState().setAuth(response)
       navigate('/')
-    }, 1000)
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to sign in. Please check your credentials.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -60,13 +67,13 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-bark-soft/60">Username / ID</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-bark-soft/60">Email</label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isSubmitting}
-                placeholder="e.g. Dr. Alex"
+                placeholder="e.g. alex@clinic.com"
                 className="w-full bg-sand border border-line rounded-2xl px-4 py-3 text-sm text-bark placeholder-bark-soft/40 focus:outline-none focus:border-sage/50 transition-colors"
               />
             </div>

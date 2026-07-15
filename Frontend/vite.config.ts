@@ -9,6 +9,8 @@ export default defineConfig({
     proxy: {
       '/predict': 'http://localhost:5000',
       '/health': 'http://localhost:5000',
+      '/login': 'http://localhost:5000',
+      '/register': 'http://localhost:5000',
     },
   },
 })
