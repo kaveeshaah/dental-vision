@@ -32,3 +32,12 @@ MAX_CONTENT_LENGTH_MB = int(os.getenv("MAX_CONTENT_LENGTH_MB", 20))
 MAX_CONTENT_LENGTH = MAX_CONTENT_LENGTH_MB * 1024 * 1024
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+
+# --- Database ---------------------------------------------------------
+SQLALCHEMY_DATABASE_URI = os.getenv(
+    "DATABASE_URL", "postgresql://postgres:CHANGE_ME@localhost:5432/dentalvision"
+)
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+# --- Auth --------------------------------------------------------------
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-change-this")
