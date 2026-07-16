@@ -9,7 +9,6 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
       <div className="max-w-6xl mx-auto glass rounded-full px-5 py-3 shadow-sm shadow-moss/5 flex items-center justify-between transition-all duration-300">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
           <div className="w-9 h-9 blob bg-gradient-to-br from-sage to-clay flex items-center justify-center shadow-md shadow-sage/20 animate-sway">
             <svg className="w-4.5 h-4.5 text-paper" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -21,7 +20,6 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-bark-soft">
           <a href="#features" className="hover:text-clay transition-colors duration-200">Features</a>
           <a href="#demo" className="hover:text-clay transition-colors duration-200">Interactive Demo</a>
@@ -31,7 +29,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
@@ -63,7 +60,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Hamburger Menu */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden p-2 text-bark-soft hover:text-moss transition-colors focus:outline-none"
@@ -79,7 +75,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       {isOpen && (
         <div className="md:hidden max-w-6xl mx-auto mt-2 glass rounded-3xl px-6 py-5 flex flex-col gap-4 animate-fade-in">
           <a href="#features" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Features</a>

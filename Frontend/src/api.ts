@@ -37,7 +37,6 @@ export async function checkHealth() {
   return response.data
 }
 
-// Authentication
 
 export interface AuthResponse {
   user: {
@@ -58,7 +57,6 @@ export async function registerUser(userData: any): Promise<AuthResponse> {
   return response.data
 }
 
-// Patients
 
 export interface Patient {
   id: number
@@ -76,6 +74,36 @@ export async function getPatients(): Promise<Patient[]> {
 
 export async function createPatient(data: { full_name: string; age: number; custom_id?: string; status?: string }): Promise<Patient> {
   const response = await api.post<Patient>('/patients', data)
+  return response.data
+}
+
+export async function generateReport(patientId: number, predictionData: PredictResponse): Promise<Blob> {
+  const response = await api.post<Blob>(
+    '/report',
+    { patient_id: patientId, data: predictionData },
+    { responseType: 'blob' }
+  )
+  return response.data
+}
+
+export interface ReportRecord {
+  id: number
+  patient_id: number
+  image_id: string | null
+  findings: PredictResponse
+  created_at: string
+}
+
+export async function saveReport(patientId: number, predictionData: PredictResponse): Promise<ReportRecord> {
+  const response = await api.post<{ message: string, report: ReportRecord }>(
+    '/report/save',
+    { patient_id: patientId, data: predictionData }
+  )
+  return response.data.report
+}
+
+export async function getReportHistory(patientId: number): Promise<ReportRecord[]> {
+  const response = await api.get<ReportRecord[]>(`/report/history/${patientId}`)
   return response.data
 }
 

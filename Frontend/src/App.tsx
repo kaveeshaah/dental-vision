@@ -11,7 +11,6 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-sand text-bark-soft flex flex-col font-sans antialiased selection:bg-clay/30 selection:text-moss">
         <Routes>
-          {/* Main Layout containing Landing Page */}
           <Route
             path="/"
             element={
@@ -38,10 +37,8 @@ function App() {
             }
           />
           
-          {/* Standalone Login Page */}
           <Route path="/login" element={<Login />} />
 
-          {/* Standalone Register Page */}
           <Route path="/register" element={<Register />} />
         </Routes>
       </div>
