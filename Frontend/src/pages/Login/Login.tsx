@@ -33,12 +33,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-sand text-bark-soft flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans grain">
-      {/* Organic canopy shapes */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blob bg-fern/15 blur-[120px] pointer-events-none animate-sway" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blob-alt bg-clay/10 blur-[120px] pointer-events-none animate-soft-pulse" />
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo and Home Link */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-2 group">
             <div className="w-10 h-10 blob bg-gradient-to-br from-sage to-clay flex items-center justify-center shadow-md shadow-sage/20 group-hover:scale-105 transition-transform duration-300">
@@ -52,7 +50,6 @@ export default function Login() {
           </Link>
         </div>
 
-        {/* Login Card */}
         <div className="bg-paper border border-line rounded-3xl p-8 shadow-lg relative overflow-hidden">
           <h2 className="font-display text-xl font-semibold text-moss mb-6">Clinician Sign In</h2>
 

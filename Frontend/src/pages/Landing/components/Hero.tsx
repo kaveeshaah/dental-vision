@@ -1,14 +1,22 @@
+import { useQuery } from '@tanstack/react-query'
+import { checkHealth } from '../../../api'
+
 export default function Hero() {
+  const { data: health } = useQuery({
+    queryKey: ['health'],
+    queryFn: checkHealth,
+  })
+
+  const accuracy = health?.model_accuracy !== undefined ? Number(health.model_accuracy).toFixed(1) : '98.4'
+
   return (
     <section className="relative pt-36 pb-20 md:pt-44 md:pb-28 overflow-hidden bg-sand grain">
-      {/* Organic canopy shapes */}
       <div className="absolute top-[-15%] left-[-12%] w-[45%] h-[45%] blob bg-fern/15 blur-[110px] pointer-events-none z-0 animate-sway" />
       <div className="absolute top-[10%] right-[-10%] w-[55%] h-[55%] blob-alt bg-clay/10 blur-[140px] pointer-events-none z-0 animate-soft-pulse" />
       <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] blob bg-sage/10 blur-[100px] pointer-events-none z-0" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="text-center max-w-4xl mx-auto">
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-paper border border-line mb-8 animate-fade-in shadow-sm">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fern opacity-75"></span>
@@ -22,7 +30,6 @@ export default function Hero() {
             </span>
           </div>
 
-          {/* Heading */}
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-moss mb-6 leading-[1.1]">
             A gentler way to read{' '}
             <span className="italic text-clay glow-text">
@@ -35,7 +42,6 @@ export default function Hero() {
             clinicians spend less time squinting at scans and more time with patients.
           </p>
 
-          {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <a
               href="#demo"
@@ -51,10 +57,9 @@ export default function Hero() {
             </a>
           </div>
 
-          {/* Metrics Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto pt-8 border-t border-line">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto pt-8 border-t border-line">
             <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
-              <div className="font-display text-3xl font-semibold text-sage tracking-tight mb-1">98.4%</div>
+              <div className="font-display text-3xl font-semibold text-sage tracking-tight mb-1">{accuracy}%</div>
               <div className="text-xs uppercase font-semibold text-bark-soft/60 tracking-wider">Model Accuracy</div>
             </div>
             <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
@@ -64,10 +69,6 @@ export default function Hero() {
             <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
               <div className="font-display text-3xl font-semibold text-moss tracking-tight mb-1">10+</div>
               <div className="text-xs uppercase font-semibold text-bark-soft/60 tracking-wider">Pathologies Detected</div>
-            </div>
-            <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
-              <div className="font-display text-3xl font-semibold text-fern tracking-tight mb-1">HIPAA</div>
-              <div className="text-xs uppercase font-semibold text-bark-soft/60 tracking-wider">Compliant Safety</div>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
-import { useState, useRef, type DragEvent, type ChangeEvent } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { predictXray, type PredictResponse } from '../../../api'
+import { useState, useRef, type DragEvent, type ChangeEvent, useEffect } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { predictXray, getPatients, generateReport, saveReport, type PredictResponse, type Patient } from '../../../api'
+import { usePatientStore } from '../../../store/patientStore'
 import { useAuthStore } from '../../../store/authStore'
 
 const typeConfig: Record<string, { color: string; dotColor: string; title: string }> = {
@@ -42,13 +43,19 @@ export default function InteractiveDemo() {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [fileError, setFileError] = useState<string | null>(null)
-  
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false)
+  const [isSavingReport, setIsSavingReport] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+
   const isAuthenticated = useAuthStore((state) => !!state.token)
-  
-  // Patient detail states
-  const [isExistingPatient, setIsExistingPatient] = useState(false)
-  const [searchId, setSearchId] = useState('')
-  const [patientId] = useState(`PT-${Math.floor(1000 + Math.random() * 9000)}`)
+
+  const { selectedPatient, setSelectedPatient } = usePatientStore()
+
+  const { data: patients = [], isLoading: isLoadingPatients } = useQuery({
+    queryKey: ['patients'],
+    queryFn: getPatients,
+    enabled: isAuthenticated, // Only fetch if the user is logged in
+  })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -65,6 +72,11 @@ export default function InteractiveDemo() {
   const validateAndUpload = (file: File) => {
     setFileError(null)
 
+    if (isAuthenticated && !selectedPatient) {
+      setFileError('Please select a patient before uploading an X-ray.')
+      return
+    }
+
     if (!ACCEPTED_TYPES.includes(file.type)) {
       setFileError('Please upload a JPEG or PNG image.')
       return
@@ -74,11 +86,53 @@ export default function InteractiveDemo() {
       return
     }
 
-    // Revoke any previous object URL to avoid leaking memory across uploads.
     if (imageUrl) URL.revokeObjectURL(imageUrl)
     setImageUrl(URL.createObjectURL(file))
 
     mutation.mutate(file)
+  }
+
+  const handleGenerateReport = async () => {
+    if (!selectedPatient || !mutation.data) return
+    try {
+      setIsGeneratingReport(true)
+      const blob = await generateReport(selectedPatient.id, mutation.data)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `report_${selectedPatient.custom_id}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err: any) {
+      console.error('Error generating report:', err)
+      if (err.response && err.response.data instanceof Blob) {
+        err.response.data.text().then((text: string) => {
+          console.error("Backend Error Response:", text)
+          setFileError(`Report error: ${err.response.status}`)
+        })
+      } else {
+        setFileError('Failed to generate report. Please try restarting your backend server.')
+      }
+    } finally {
+      setIsGeneratingReport(false)
+    }
+  }
+
+  const handleSaveReport = async () => {
+    if (!selectedPatient || !mutation.data) return
+    try {
+      setIsSavingReport(true)
+      await saveReport(selectedPatient.id, mutation.data)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (err: any) {
+      console.error('Error saving report:', err)
+      setFileError('Failed to save report to records.')
+    } finally {
+      setIsSavingReport(false)
+    }
   }
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -107,7 +161,6 @@ export default function InteractiveDemo() {
       <div className="absolute bottom-0 left-0 w-[40%] h-[40%] blob-alt bg-clay/10 blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-line pb-6">
           <div>
             <h2 className="font-display text-2xl md:text-3xl font-bold text-moss mb-2">Clinical Diagnostic Dashboard</h2>
@@ -117,81 +170,63 @@ export default function InteractiveDemo() {
           </div>
         </div>
 
-        {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Panel: Controls */}
           <div className="lg:col-span-4 flex flex-col gap-6">
-            {/* Patient Details & Upload */}
             <div className={`p-6 rounded-3xl bg-paper border border-line shadow-sm space-y-5 transition-all duration-500 ${imageUrl ? 'order-2' : 'order-1'}`}>
               <div className="flex items-center justify-between border-b border-line pb-4">
                 <h3 className="text-lg font-bold text-bark flex items-center gap-2">
                   <svg className="w-5 h-5 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  {isAuthenticated ? 'Patient & Scan' : 'Upload Scan'}
+                  Patient Selection
                 </h3>
-
-                {/* Toggle switch for Existing Patient */}
-                {isAuthenticated && (
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${!isExistingPatient ? 'text-clay' : 'text-bark-soft/50'}`}>New</span>
-                    <div className="relative">
-                      <input type="checkbox" className="sr-only" checked={isExistingPatient} onChange={(e) => setIsExistingPatient(e.target.checked)} />
-                      <div className={`block w-10 h-6 rounded-full transition-colors ${isExistingPatient ? 'bg-sage' : 'bg-line'}`}></div>
-                      <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isExistingPatient ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                    </div>
-                    <span className={`text-xs font-semibold uppercase tracking-wider transition-colors ${isExistingPatient ? 'text-sage' : 'text-bark-soft/50'}`}>Existing</span>
-                  </label>
-                )}
               </div>
 
               {isAuthenticated ? (
                 <div className="space-y-3 relative">
-                  {/* Optional overlay if existing patient selected to dim out the Name/Age fields */}
+                  <div>
+                    <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">
+                      Select Patient
+                    </label>
+                    <select
+                      value={selectedPatient?.id || ''}
+                      onChange={(e) => {
+                        const patient = patients.find(p => p.id === parseInt(e.target.value))
+                        setSelectedPatient(patient || null)
+                      }}
+                      disabled={isLoadingPatients}
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus:border-sage/50 bg-paper border-line text-bark"
+                    >
+                      <option value="">{isLoadingPatients ? 'Loading patients...' : '-- Select a Patient --'}</option>
+                      {patients.map(patient => (
+                        <option key={patient.id} value={patient.id}>
+                          {patient.full_name} ({patient.custom_id})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">
-                        {isExistingPatient ? 'Search Patient ID' : 'Patient ID'}
-                      </label>
-                      <input
-                        type="text"
-                        disabled={!isExistingPatient}
-                        value={isExistingPatient ? searchId : patientId}
-                        onChange={(e) => setSearchId(e.target.value)}
-                        placeholder={isExistingPatient ? "e.g. PT-1002" : ""}
-                        className={`w-full border rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus:border-sage/50 ${
-                          !isExistingPatient 
-                            ? 'bg-sand border-line text-bark-soft/60 cursor-not-allowed' 
-                            : 'bg-paper border-line text-bark placeholder-bark-soft/40'
-                        }`}
-                      />
-                    </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Age</label>
                       <input
                         type="number"
-                        disabled={isExistingPatient}
-                        placeholder={isExistingPatient ? "Auto-filled" : "e.g. 34"}
-                        className={`w-full border rounded-xl px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-sage/50 ${
-                          isExistingPatient
-                            ? 'bg-sand border-line text-transparent placeholder-bark-soft/30 cursor-not-allowed'
-                            : 'bg-sand border-line text-bark placeholder-bark-soft/40'
-                        }`}
+                        disabled
+                        value={selectedPatient?.age || ''}
+                        placeholder="Auto-filled"
+                        className="w-full border rounded-xl px-3 py-2.5 text-sm bg-sand border-line text-bark-soft/60 cursor-not-allowed"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Full Name</label>
-                    <input
-                      type="text"
-                      disabled={isExistingPatient}
-                      placeholder={isExistingPatient ? "Auto-filled on search" : "e.g. John Doe"}
-                      className={`w-full border rounded-xl px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-sage/50 ${
-                        isExistingPatient
-                          ? 'bg-sand border-line text-transparent placeholder-bark-soft/30 cursor-not-allowed'
-                          : 'bg-sand border-line text-bark placeholder-bark-soft/40'
-                      }`}
-                    />
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block mb-1.5">Status</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={selectedPatient?.status || ''}
+                        placeholder="Auto-filled"
+                        className="w-full border rounded-xl px-3 py-2.5 text-sm bg-sand border-line text-bark-soft/60 cursor-not-allowed"
+                      />
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -200,7 +235,6 @@ export default function InteractiveDemo() {
                 </div>
               )}
 
-              {/* Upload Dropzone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
@@ -234,7 +268,6 @@ export default function InteractiveDemo() {
               </div>
             </div>
 
-            {/* Control Panel Card */}
             <div className={`p-6 rounded-3xl bg-paper border border-line shadow-sm space-y-6 transition-all duration-500 ${imageUrl ? 'order-1' : 'order-2'}`}>
               <h3 className="text-lg font-bold text-bark flex items-center gap-2 border-b border-line pb-4">
                 <svg className="w-5 h-5 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -243,7 +276,6 @@ export default function InteractiveDemo() {
                 Inference Controls
               </h3>
 
-              {/* Pathology Filters */}
               <div className="space-y-3">
                 <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold block">
                   Pathology Categories
@@ -284,7 +316,6 @@ export default function InteractiveDemo() {
                 </div>
               </div>
 
-              {/* Confidence Threshold Slider */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs uppercase tracking-wider text-bark-soft/60 font-semibold">
@@ -326,11 +357,9 @@ export default function InteractiveDemo() {
             )}
           </div>
 
-          {/* Right Panel: Interactive Canvas */}
           <div className="lg:col-span-8">
             <div className="relative rounded-3xl overflow-hidden border border-line bg-paper shadow-lg p-4">
 
-              {/* Top Canvas Stats Overlay */}
               <div className="flex justify-between items-center mb-4 border-b border-line pb-3 px-1">
                 <div className="flex items-center gap-2">
                   <span className={`inline-block w-2.5 h-2.5 rounded-full ${mutation.isPending ? 'bg-clay animate-pulse' : 'bg-fern'
@@ -340,13 +369,49 @@ export default function InteractiveDemo() {
                   </span>
                 </div>
                 {mutation.isSuccess && (
-                  <div className="text-xs text-bark-soft font-semibold bg-sand px-2.5 py-1 rounded-full border border-line">
-                    Detections: <span className="text-clay font-bold">{filteredDetections.length}</span>
+                  <div className="flex items-center gap-3">
+                    <div className="text-xs text-bark-soft font-semibold bg-sand px-2.5 py-1 rounded-full border border-line">
+                      Detections: <span className="text-clay font-bold">{filteredDetections.length}</span>
+                    </div>
+                    {selectedPatient && (
+                      <>
+                        <button
+                          onClick={handleSaveReport}
+                          disabled={isSavingReport || saveSuccess}
+                          className="text-xs font-bold bg-sand hover:bg-line text-bark px-3 py-1.5 rounded-full shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          {saveSuccess ? (
+                            <span className="text-moss">✓ Saved</span>
+                          ) : isSavingReport ? (
+                            <span className="w-3.5 h-3.5 border-2 border-bark/40 border-t-bark rounded-full animate-spin" />
+                          ) : (
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                          )}
+                          {!saveSuccess && (isSavingReport ? 'Saving...' : 'Save to Records')}
+                        </button>
+
+                        <button
+                          onClick={handleGenerateReport}
+                          disabled={isGeneratingReport}
+                          className="text-xs font-bold bg-sage hover:bg-moss text-paper px-3 py-1.5 rounded-full shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          {isGeneratingReport ? (
+                            <span className="w-3.5 h-3.5 border-2 border-paper/40 border-t-paper rounded-full animate-spin" />
+                          ) : (
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          )}
+                          {isGeneratingReport ? 'Generating...' : 'Download Report'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Main Image Viewport */}
               <div
                 className="relative overflow-hidden rounded-2xl bg-moss border border-line"
                 style={
@@ -380,10 +445,9 @@ export default function InteractiveDemo() {
                   </div>
                 )}
 
-                {/* Absolute overlay for real YOLO + classifier detections */}
                 {imageDimensions && filteredDetections.map((detection, i) => {
                   const config = typeConfig[detection.disease_label]
-                  if (!config) return null // unknown label -- skip rather than crash
+                  if (!config) return null
 
                   const [x1, y1, x2, y2] = detection.bbox
                   const top = `${(y1 / imageDimensions.height) * 100}%`
@@ -403,12 +467,10 @@ export default function InteractiveDemo() {
                         } ${isHovered ? 'scale-105 shadow-lg border-white ring-2 ring-white/10 z-30' : 'z-20'
                         }`}
                     >
-                      {/* Box Label Indicator */}
                       <div className="absolute top-0 left-0 -translate-y-full bg-moss text-[10px] font-bold text-sand px-1.5 py-0.5 rounded-t border-t border-x border-moss/70 scale-90 group-hover:scale-100 origin-bottom-left transition-transform duration-150 pointer-events-none whitespace-nowrap shadow-md">
                         {confidencePct}%
                       </div>
 
-                      {/* Floating tooltip */}
                       {isHovered && (
                         <div className="absolute top-[110%] left-1/2 -translate-x-1/2 bg-moss border border-moss/70 p-3 rounded-xl shadow-xl text-sand/80 text-xs w-48 z-40 space-y-1 pointer-events-none text-left font-sans">
                           <p className="font-bold text-sand border-b border-sand/20 pb-1 mb-1">{config.title}</p>
@@ -432,7 +494,6 @@ export default function InteractiveDemo() {
                 })}
               </div>
 
-              {/* Bottom Info Banner */}
               <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-xs text-bark-soft/60 px-1 pt-1">
                 <p className="flex items-center gap-1.5">
                   <svg className="w-4 h-4 text-sage/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">

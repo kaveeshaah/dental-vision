@@ -3,7 +3,6 @@ export default function Footer() {
     <footer className="bg-moss py-12 border-t border-moss relative z-10 font-sans">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-sand/10 pb-8 mb-8">
-          {/* Logo Brand */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 blob bg-gradient-to-br from-sage to-clay flex items-center justify-center">
               <svg className="w-4 h-4 text-sand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -15,7 +14,6 @@ export default function Footer() {
             </span>
           </div>
 
-          {/* Quick Links */}
           <div className="flex flex-wrap justify-center gap-8 text-sm text-sand/60">
             <a href="#features" className="hover:text-fern transition-colors">Features</a>
             <a href="#demo" className="hover:text-fern transition-colors">Interactive Demo</a>
@@ -24,14 +22,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Legal & Copyright */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-sand/40">
           <p>© {new Date().getFullYear()} DentalVision AI. All rights reserved.</p>
           <p className="flex items-center gap-2">
             Designed for clinical research & auxiliary diagnostics.
-            <span className="text-fern bg-fern/10 px-2 py-0.5 rounded-full border border-fern/20 font-bold uppercase tracking-wider text-[8px]">
-              HIPAA Protected
-            </span>
           </p>
         </div>
       </div>
