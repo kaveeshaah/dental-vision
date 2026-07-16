@@ -16,6 +16,9 @@ class Patient(db.Model):
         db.DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
+    # Relationship to reports
+    reports = db.relationship("Report", backref="patient", lazy=True, cascade="all, delete-orphan")
+
     def to_dict(self):
         return {
             "id": self.id,

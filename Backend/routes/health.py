@@ -24,4 +24,5 @@ def health():
             "yolo_conf_threshold": YOLO_CONF_THRESHOLD,
             "classifier_conf_threshold": CLASSIFIER_CONF_THRESHOLD,
         },
+        "model_accuracy": MODEL_ACCURACY,
     }), 200

@@ -31,9 +31,10 @@ def create_app() -> Flask:
     jwt.init_app(app)
 
     with app.app_context():
-        from models.user import User  # noqa: F401 -- registers model with SQLAlchemy
-        from models.patient import Patient  # noqa: F401 -- registers Patient model
-        db.create_all()  # creates the tables if they don't exist yet
+        from models.user import User 
+        from models.patient import Patient  
+        from models.report import Report  
+        db.create_all()  
 
     logger.info("Loading models...")
     from inference import detector, classifier  # noqa: F401
@@ -43,11 +44,13 @@ def create_app() -> Flask:
     from routes.health import health_bp
     from routes.auth import auth_bp
     from routes.patients import patients_bp
+    from routes.report import report_bp
 
     app.register_blueprint(predict_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(patients_bp)
+    app.register_blueprint(report_bp)
 
     return app
 

@@ -43,8 +43,15 @@ def create_patient():
         return jsonify({"error": "Missing required fields (full_name, age)"}), 400
         
     if not custom_id:
-        custom_id = f"PT-{random.randint(1000, 9999)}"
-        
+        last_patient = Patient.query.filter_by(doctor_id=current_user_id).order_by(Patient.id.desc()).first()
+        if last_patient and last_patient.custom_id and last_patient.custom_id.startswith("PT-"):
+            try:
+                last_num = int(last_patient.custom_id.split("-")[1])
+                custom_id = f"PT-{last_num + 1}"
+            except (ValueError, IndexError):
+                custom_id = f"PT-{last_patient.id + 1000}"
+        else:
+            custom_id = "PT-1001"
     try:
         new_patient = Patient(
             doctor_id=current_user_id,
