@@ -5,7 +5,8 @@ import Footer from './components/Footer/Footer'
 import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 import PatientRecords from './pages/PatientRecords/PatientRecords'
-
+import DashboardLayout from './layouts/DashboardLayout'
+import PatientDashboard from './pages/Dashboard/PatientDashboard'
 function App() {
   return (
     <BrowserRouter>
@@ -23,7 +24,7 @@ function App() {
               </>
             }
           />
-          
+
           <Route
             path="/patient-records"
             element={
@@ -36,7 +37,16 @@ function App() {
               </>
             }
           />
-          
+
+          <Route
+            path="/dashboard/patient"
+            element={
+              <DashboardLayout>
+                <PatientDashboard />
+              </DashboardLayout>
+            }
+          />
+
           <Route path="/login" element={<Login />} />
 
           <Route path="/register" element={<Register />} />

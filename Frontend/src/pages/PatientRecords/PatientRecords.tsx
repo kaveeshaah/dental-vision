@@ -142,12 +142,12 @@ export default function PatientRecords() {
                       </button>
                       <button 
                         onClick={() => {
-                          setHistoryPatient(patient)
-                          setHistoryModalOpen(true)
+                          setSelectedPatient(patient)
+                          navigate('/dashboard/patient')
                         }}
                         className="px-3 py-1.5 rounded-lg border border-transparent hover:border-clay/30 hover:bg-clay/10 text-sm font-medium text-clay hover:text-clay-light transition-all cursor-pointer"
                       >
-                        View History
+                        View Dashboard
                       </button>
                     </td>
                   </tr>
