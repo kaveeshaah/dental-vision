@@ -102,6 +102,13 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          <div className="mt-6 text-center text-sm text-bark-soft/80">
+            Not registered?{' '}
+            <Link to="/register" className="font-semibold text-clay hover:text-clay-light transition-colors">
+              Register
+            </Link>
+          </div>
         </div>
       </div>
     </div>
