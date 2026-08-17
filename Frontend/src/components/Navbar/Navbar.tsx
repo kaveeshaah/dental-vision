@@ -1,10 +1,20 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { user, logout } = useAuthStore()
+  const location = useLocation()
+
+  const isActive = (path: string) => {
+    if (path === '/' && location.pathname !== '/') return false
+    return location.pathname.startsWith(path) || location.hash === path
+  }
+
+  const baseLinkClass = "transition-colors duration-200"
+  const activeLinkClass = "font-medium text-bark border-b-2 border-clay pb-1"
+  const inactiveLinkClass = "hover:text-clay"
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
@@ -16,10 +26,10 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm text-bark-soft">
-          <Link to="/" className="font-medium text-bark border-b-2 border-clay pb-1">Dashboard</Link>
-          <Link to="/patient-records" className="hover:text-clay transition-colors duration-200">Records</Link>
-          <Link to="/#demo" className="hover:text-clay transition-colors duration-200">Diagnostics</Link>
-          <a href="#" className="hover:text-clay transition-colors duration-200">Analytics</a>
+          <Link to="/" className={`${baseLinkClass} ${isActive('/') && !location.hash ? activeLinkClass : inactiveLinkClass}`}>Dashboard</Link>
+          <Link to="/patient-records" className={`${baseLinkClass} ${isActive('/patient-records') || isActive('/dashboard/patient') ? activeLinkClass : inactiveLinkClass}`}>Records</Link>
+          <Link to="/#demo" className={`${baseLinkClass} ${location.hash === '#demo' ? activeLinkClass : inactiveLinkClass}`}>Diagnostics</Link>
+          <a href="#" className={`${baseLinkClass} ${inactiveLinkClass}`}>Analytics</a>
         </div>
 
         <div className="hidden md:flex items-center gap-6">

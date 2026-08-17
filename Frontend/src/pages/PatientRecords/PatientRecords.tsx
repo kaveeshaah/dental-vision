@@ -182,7 +182,7 @@ export default function PatientRecords() {
                   <button
                     onClick={() => {
                       setSelectedPatient(createdPatient)
-                      navigate('/#demo') // Or just '/' depending on where the scanner is
+                      navigate('/#demo')
                     }}
                     className="w-full px-4 py-3 rounded-xl text-sm font-semibold text-paper bg-sage hover:bg-moss transition-colors shadow-sm"
                   >

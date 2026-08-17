@@ -7,6 +7,8 @@ import Register from './pages/Register/Register'
 import PatientRecords from './pages/PatientRecords/PatientRecords'
 import DashboardLayout from './layouts/DashboardLayout'
 import PatientDashboard from './pages/Dashboard/PatientDashboard'
+import ProtectedRoute from './components/ProtectedRoute'
+
 function App() {
   return (
     <BrowserRouter>
@@ -28,22 +30,26 @@ function App() {
           <Route
             path="/patient-records"
             element={
-              <>
-                <Navbar />
-                <main className="flex-grow">
-                  <PatientRecords />
-                </main>
-                <Footer />
-              </>
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <main className="flex-grow">
+                    <PatientRecords />
+                  </main>
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
 
           <Route
             path="/dashboard/patient"
             element={
-              <DashboardLayout>
-                <PatientDashboard />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <PatientDashboard />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
 
