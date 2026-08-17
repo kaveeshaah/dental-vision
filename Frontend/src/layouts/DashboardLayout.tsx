@@ -53,7 +53,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Navigation */}
         <nav className="flex-1 px-4 space-y-1">
           {navItems.map((item) => {
-            // Check if active. For mock, just match the start of the path
+            // Check if active
             const isActive = location.pathname.includes(item.path) || (item.name === 'Patients' && location.pathname.includes('/dashboard/patient'))
 
             return (

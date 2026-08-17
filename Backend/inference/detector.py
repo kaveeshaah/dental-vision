@@ -32,16 +32,7 @@ if _model.task != "segment":
 
 
 def run_detection(image_bgr: np.ndarray, conf_threshold: float = None) -> list:
-    """
-    Run YOLO segmentation on a full OPG image.
-
-    Returns a list of dicts:
-        {"bbox": [x1, y1, x2, y2], "det_confidence": float,
-         "yolo_class_id": int, "yolo_class_name": str, "mask": np.ndarray | None}
-
-    Detections below conf_threshold, or outside the 5 disease classes,
-    are dropped here -- before they ever reach the classifier.
-    """
+    """Run YOLO segmentation and filter to disease classes only (drops non-disease findings)."""
     threshold = conf_threshold if conf_threshold is not None else YOLO_CONF_THRESHOLD
 
     results = _model.predict(image_bgr, conf=threshold, verbose=False)
