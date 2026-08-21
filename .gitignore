@@ -231,3 +231,15 @@ Backend/.venv/
 *.h5
 *.pkl
 *.joblib
+
+# --- Added during final cleanup ---
+__pycache__/
+*.pyc
+.env
+redirect_test_*.png
+dashboard_boxes_*.png
+report_history_*.png
+patient_records_*.png
+register_page_*.png
+screenshot_error.png
+*.webp

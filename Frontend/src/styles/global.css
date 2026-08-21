@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  /* Biophilic palette -- warm, organic, grown rather than manufactured */
+  --color-moss: #33472f;      /* deep forest -- headings, footer, high-contrast text */
+  --color-sage: #5f7a5b;      /* primary green -- links, icons, secondary actions */
+  --color-fern: #8fae7b;      /* light green -- highlights, success states */
+  --color-clay: #bc6a44;      /* terracotta -- primary CTA, warm accent */
+  --color-clay-light: #e0895f;
+  --color-sand: #f4efe1;      /* warm page background, replaces slate-50 */
+  --color-paper: #fffcf5;     /* warm card surface, replaces white */
+  --color-bark: #332d22;      /* near-black warm text, replaces slate-900 */
+  --color-bark-soft: #5c5442; /* body text, replaces slate-700 */
+  --color-line: #e4dbc4;      /* warm border, replaces slate-200 */
+  --font-display: 'Fraunces', 'Georgia', serif;
+}
+
+body {
+  background-color: var(--color-sand);
+  color: var(--color-bark-soft);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-sand);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fern);
+}
+
+/* Warm paper card utility, replaces cool glassmorphism */
+.glass {
+  background: rgba(255, 252, 245, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 71, 47, 0.08);
+}
+
+/* Glowing text */
+.glow-text {
+  text-shadow: 0 0 24px rgba(188, 106, 68, 0.18);
+}
+
+/* Organic blob shapes -- irregular, hand-grown rather than geometric */
+.blob {
+  border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+}
+.blob-alt {
+  border-radius: 42% 58% 65% 35% / 48% 45% 55% 52%;
+}
+
+/* Subtle grain texture for organic warmth */
+.grain {
+  position: relative;
+}
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+}
+
+/* Keyframes for soft pulse (breathing) animation */
+@keyframes soft-pulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 4s infinite ease-in-out;
+}
+
+/* Gentle organic sway for blob shapes */
+@keyframes sway {
+  0%, 100% { transform: rotate(-2deg) scale(1); }
+  50% { transform: rotate(2deg) scale(1.03); }
+}
+
+.animate-sway {
+  animation: sway 9s ease-in-out infinite;
+}
