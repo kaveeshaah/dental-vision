@@ -1,7 +1,3 @@
-"""
-POST /register -- create a new clinician account
-POST /login -- authenticate and receive a JWT access token
-"""
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 

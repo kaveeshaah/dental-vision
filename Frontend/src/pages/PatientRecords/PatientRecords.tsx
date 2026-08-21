@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { getPatients, createPatient, getReportHistory, generateReport, type Patient, type ReportRecord } from '../../api'
 import { usePatientStore } from '../../store/patientStore'
+import { toast } from 'react-hot-toast'
 
 export default function PatientRecords() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -33,7 +34,11 @@ export default function PatientRecords() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['patients'] })
       setCreatedPatient(data)
+      toast.success('Patient created successfully!')
     },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to create patient.')
+    }
   })
 
   const filteredPatients = patients.filter(
@@ -283,15 +288,21 @@ export default function PatientRecords() {
                        </div>
                        <button
                          onClick={async () => {
-                           const blob = await generateReport(historyPatient.id, report.findings)
-                           const url = window.URL.createObjectURL(blob)
-                           const link = document.createElement('a')
-                           link.href = url
-                           link.setAttribute('download', `report_${historyPatient.custom_id}_${report.id}.pdf`)
-                           document.body.appendChild(link)
-                           link.click()
-                           link.remove()
-                           window.URL.revokeObjectURL(url)
+                           try {
+                             toast.loading('Generating report...', { id: 'report' })
+                             const blob = await generateReport(historyPatient.id, report.findings)
+                             const url = window.URL.createObjectURL(blob)
+                             const link = document.createElement('a')
+                             link.href = url
+                             link.setAttribute('download', `report_${historyPatient.custom_id}_${report.id}.pdf`)
+                             document.body.appendChild(link)
+                             link.click()
+                             link.remove()
+                             window.URL.revokeObjectURL(url)
+                             toast.success('Report downloaded!', { id: 'report' })
+                           } catch (err) {
+                             toast.error('Failed to generate report.', { id: 'report' })
+                           }
                          }}
                          className="px-3 py-1.5 bg-sage hover:bg-moss text-paper text-xs font-semibold rounded-lg shadow-sm transition-colors"
                        >
