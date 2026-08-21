@@ -2,30 +2,30 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginUser } from '../../api'
 import { useAuthStore } from '../../store/authStore'
+import { toast } from 'react-hot-toast'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!email.trim() || !password.trim()) {
-      setError('Please fill in all clinical credentials.')
+      toast.error('Please fill in all clinical credentials.')
       return
     }
 
-    setError('')
     setIsSubmitting(true)
     
     try {
       const response = await loginUser({ email, password })
       useAuthStore.getState().setAuth(response)
+      toast.success('Login successful! Welcome back.')
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to sign in. Please check your credentials.')
+      toast.error(err.response?.data?.error || 'Failed to sign in. Please check your credentials.')
     } finally {
       setIsSubmitting(false)
     }
@@ -52,15 +52,6 @@ export default function Login() {
 
         <div className="bg-paper border border-line rounded-3xl p-8 shadow-lg relative overflow-hidden">
           <h2 className="font-display text-xl font-semibold text-moss mb-6">Clinician Sign In</h2>
-
-          {error && (
-            <div className="p-3 rounded-2xl bg-clay/10 border border-clay/20 text-clay text-xs mb-4 flex items-center gap-2">
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>{error}</span>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">

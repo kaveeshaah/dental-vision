@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import ChatWidget from '../components/Chat/ChatWidget'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -78,6 +79,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content Area */}
       <main className="flex-1 overflow-x-hidden min-h-screen relative">
         {children}
+        <ChatWidget />
       </main>
     </div>
   )

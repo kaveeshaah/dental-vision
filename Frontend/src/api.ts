@@ -118,7 +118,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    // Only redirect to home on 401 if it's NOT a login request
+    if (error.response && error.response.status === 401 && !error.config.url?.includes('/login')) {
       useAuthStore.getState().logout()
       window.location.href = '/'
     }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import { toast } from 'react-hot-toast'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -38,7 +39,10 @@ export default function Navbar() {
           </a>
           {user ? (
             <button
-              onClick={logout}
+              onClick={() => {
+                logout()
+                toast.success('Logged out successfully.')
+              }}
               className="px-6 py-2 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light shadow-md transition-all duration-300"
             >
               Logout
@@ -86,6 +90,7 @@ export default function Navbar() {
                   onClick={() => {
                     logout()
                     setIsOpen(false)
+                    toast.success('Logged out successfully.')
                   }}
                   className="w-full text-center px-5 py-2.5 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light transition-colors"
                 >
