@@ -13,12 +13,31 @@ def allowed_file(filename: str, allowed_extensions: set) -> bool:
     return ext in allowed_extensions
 
 
+def validate_is_xray(image_bgr: np.ndarray, threshold: float = 15.0) -> bool:
+
+    if len(image_bgr.shape) < 3 or image_bgr.shape[2] != 3:
+        return True
+    
+    b, g, r = cv2.split(image_bgr.astype(float))
+    rg_diff = np.abs(r - g)
+    rb_diff = np.abs(r - b)
+    gb_diff = np.abs(g - b)
+    
+    max_pixel_diffs = np.maximum.reduce([rg_diff, rb_diff, gb_diff])
+
+    p95_diff = np.percentile(max_pixel_diffs, 95)
+    
+    return p95_diff < threshold
+
 def decode_image_bytes(file_bytes: bytes) -> np.ndarray:
     np_arr = np.frombuffer(file_bytes, dtype=np.uint8)
     image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
     if image is None:
         raise InvalidImageError("Could not decode image -- file may be corrupt or an unsupported format.")
+
+    if not validate_is_xray(image):
+        raise InvalidImageError("Image does not appear to be a dental X-ray (detected a color photograph). Please upload a valid X-ray image.")
 
     return image
 

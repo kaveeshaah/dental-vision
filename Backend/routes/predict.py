@@ -34,6 +34,7 @@ def predict():
         file_bytes = file.read()
         image_bgr = decode_image_bytes(file_bytes)
     except InvalidImageError as e:
+        logger.warning(f"Invalid image uploaded: {e}")
         return jsonify({"error": str(e)}), 400
 
     try:
