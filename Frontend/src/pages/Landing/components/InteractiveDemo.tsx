@@ -74,6 +74,10 @@ export default function InteractiveDemo() {
         .filter(([_, count]) => count > 0)
         .map(([cls]) => cls)
       setSelectedTypes(detectedClasses)
+    },
+    onError: (err: any) => {
+      setFileError(err.response?.data?.error || 'Failed to analyze the image.')
+      setImageUrl(null)
     }
   })
 

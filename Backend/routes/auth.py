@@ -58,8 +58,11 @@ def login():
 
     user = User.query.filter_by(email=email).first()
 
-    if not user or not bcrypt.check_password_hash(user.password_hash, password):
-        return jsonify({"error": "Invalid email or password."}), 401
+    if not user:
+        return jsonify({"error": "Email not found."}), 404
+
+    if not bcrypt.check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Invalid password."}), 401
 
     access_token = create_access_token(identity=str(user.id))
     return jsonify({"user": user.to_dict(), "access_token": access_token}), 200
