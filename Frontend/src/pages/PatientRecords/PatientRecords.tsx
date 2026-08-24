@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { getPatients, createPatient, getReportHistory, generateReport, type Patient, type ReportRecord } from '../../api'
+import { getPatients, createPatient, deletePatient, getReportHistory, generateReport, type Patient, type ReportRecord } from '../../api'
 import { usePatientStore } from '../../store/patientStore'
 import { toast } from 'react-hot-toast'
 
@@ -40,6 +40,51 @@ export default function PatientRecords() {
       toast.error(error.response?.data?.error || 'Failed to create patient.')
     }
   })
+
+  const deleteMutation = useMutation({
+    mutationFn: deletePatient,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] })
+      toast.success('Patient deleted successfully.')
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Failed to delete patient.')
+    }
+  })
+
+  const handleDeletePatient = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    toast.custom((t) => (
+      <div className={`${t.visible ? 'animate-fade-in-up' : 'animate-fade-out-down'} max-w-md w-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-[20px] pointer-events-auto flex flex-col p-5 relative border border-line/20 gap-3`}>
+        <div className="flex items-center gap-3 mb-1">
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-red-100 text-red-500 shadow-sm">
+            ⚠️
+          </div>
+          <p className="text-[16px] font-bold text-gray-900 font-sans leading-tight">Confirm Deletion</p>
+        </div>
+        <p className="text-[14px] text-gray-500 leading-snug">
+          Are you sure you want to delete this patient? This will also permanently delete their reports and cannot be undone.
+        </p>
+        <div className="flex gap-2 justify-end mt-2">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-2 rounded-xl text-sm font-medium text-bark hover:bg-sand transition-colors border border-line"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              toast.dismiss(t.id)
+              deleteMutation.mutate(id)
+            }}
+            className="px-4 py-2 rounded-xl text-sm font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors shadow-sm"
+          >
+            Confirm Delete
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity })
+  }
 
   const filteredPatients = patients.filter(
     (p) =>
@@ -153,6 +198,13 @@ export default function PatientRecords() {
                         className="px-3 py-1.5 rounded-lg border border-transparent hover:border-clay/30 hover:bg-clay/10 text-sm font-medium text-clay hover:text-clay-light transition-all cursor-pointer"
                       >
                         View Dashboard
+                      </button>
+                      <button
+                        onClick={(e) => handleDeletePatient(patient.id, e)}
+                        disabled={deleteMutation.isPending}
+                        className="px-3 py-1.5 rounded-lg border border-transparent hover:border-red-500/30 hover:bg-red-500/10 text-sm font-semibold text-red-500 hover:text-red-600 transition-all cursor-pointer"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>

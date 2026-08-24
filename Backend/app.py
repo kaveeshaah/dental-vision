@@ -48,6 +48,7 @@ def create_app() -> Flask:
     from routes.patients import patients_bp
     from routes.report import report_bp
     from routes.chat import chat_bp
+    from routes.analytics import analytics_bp
 
     app.register_blueprint(predict_bp)
     app.register_blueprint(health_bp)
@@ -55,6 +56,7 @@ def create_app() -> Flask:
     app.register_blueprint(patients_bp)
     app.register_blueprint(report_bp)
     app.register_blueprint(chat_bp)
+    app.register_blueprint(analytics_bp)
 
     return app
 

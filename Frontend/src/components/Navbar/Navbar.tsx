@@ -30,7 +30,8 @@ export default function Navbar() {
           <Link to="/" className={`${baseLinkClass} ${isActive('/') && !location.hash ? activeLinkClass : inactiveLinkClass}`}>Dashboard</Link>
           <Link to="/patient-records" className={`${baseLinkClass} ${isActive('/patient-records') || isActive('/dashboard/patient') ? activeLinkClass : inactiveLinkClass}`}>Records</Link>
           <Link to="/#demo" className={`${baseLinkClass} ${location.hash === '#demo' ? activeLinkClass : inactiveLinkClass}`}>Diagnostics</Link>
-          <a href="#" className={`${baseLinkClass} ${inactiveLinkClass}`}>Analytics</a>
+          <Link to="/about" className={`${baseLinkClass} ${isActive('/about') ? activeLinkClass : inactiveLinkClass}`}>About</Link>
+          <Link to="/analytics" className={`${baseLinkClass} ${isActive('/analytics') ? activeLinkClass : inactiveLinkClass}`}>Analytics</Link>
         </div>
 
         <div className="hidden md:flex items-center gap-6">
@@ -77,6 +78,8 @@ export default function Navbar() {
           <a href="#features" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Features</a>
           <a href="#demo" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Interactive Demo</a>
           <a href="#how-it-works" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">How It Works</a>
+          <Link to="/about" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">About</Link>
+          <Link to="/analytics" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Analytics</Link>
           {user && (
             <Link to="/patient-records" onClick={() => setIsOpen(false)} className="text-bark-soft hover:text-clay py-1 transition-colors text-sm">Patient Records</Link>
           )}

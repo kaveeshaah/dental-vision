@@ -66,3 +66,21 @@ def create_patient():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+@patients_bp.route("/<int:patient_id>", methods=["DELETE"])
+@jwt_required()
+def delete_patient(patient_id):
+    current_user_id = get_jwt_identity()
+    patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user_id).first()
+    
+    if not patient:
+        return jsonify({"error": "Patient not found or unauthorized"}), 404
+        
+    try:
+        db.session.delete(patient)
+        db.session.commit()
+        return jsonify({"message": "Patient deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
