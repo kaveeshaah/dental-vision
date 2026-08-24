@@ -77,6 +77,11 @@ export async function createPatient(data: { full_name: string; age: number; cust
   return response.data
 }
 
+export async function deletePatient(patientId: number): Promise<{ message: string }> {
+  const response = await api.delete<{ message: string }>(`/patients/${patientId}`)
+  return response.data
+}
+
 export async function generateReport(patientId: number, predictionData: PredictResponse): Promise<Blob> {
   const response = await api.post<Blob>(
     '/report',
@@ -104,6 +109,20 @@ export async function saveReport(patientId: number, predictionData: PredictRespo
 
 export async function getReportHistory(patientId: number): Promise<ReportRecord[]> {
   const response = await api.get<ReportRecord[]>(`/report/history/${patientId}`)
+  return response.data
+}
+
+export interface AnalyticsData {
+  total_patients: number
+  total_scans: number
+  disease_distribution: { name: string; value: number }[]
+  age_distribution: { name: string; value: number }[]
+  activity_over_time: { date: string; scans: number }[]
+  average_findings: number
+}
+
+export async function getAnalytics(): Promise<AnalyticsData> {
+  const response = await api.get<AnalyticsData>('/analytics')
   return response.data
 }
 

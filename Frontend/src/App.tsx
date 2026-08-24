@@ -9,6 +9,8 @@ import PatientRecords from './pages/PatientRecords/PatientRecords'
 import DashboardLayout from './layouts/DashboardLayout'
 import PatientDashboard from './pages/Dashboard/PatientDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import About from './pages/About/About'
+import Analytics from './pages/Analytics/Analytics'
 
 function App() {
   return (
@@ -59,6 +61,34 @@ function App() {
                 </main>
                 <Footer />
               </>
+            }
+          />
+
+          <Route
+            path="/about"
+            element={
+              <>
+                <Navbar />
+                <main className="flex-grow">
+                  <About />
+                </main>
+                <Footer />
+              </>
+            }
+          />
+
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <main className="flex-grow">
+                    <Analytics />
+                  </main>
+                  <Footer />
+                </>
+              </ProtectedRoute>
             }
           />
 
