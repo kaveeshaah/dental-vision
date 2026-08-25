@@ -197,7 +197,16 @@ export default function PatientRecords() {
                         }}
                         className="px-3 py-1.5 rounded-lg border border-transparent hover:border-clay/30 hover:bg-clay/10 text-sm font-medium text-clay hover:text-clay-light transition-all cursor-pointer"
                       >
-                        View Dashboard
+                        Dashboard
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setHistoryPatient(patient)
+                          setHistoryModalOpen(true)
+                        }}
+                        className="px-3 py-1.5 rounded-lg border border-transparent hover:border-moss/30 hover:bg-moss/10 text-sm font-medium text-moss hover:text-moss-dark transition-all cursor-pointer"
+                      >
+                        History
                       </button>
                       <button
                         onClick={(e) => handleDeletePatient(patient.id, e)}
@@ -247,9 +256,11 @@ export default function PatientRecords() {
                   </button>
                   <button
                     onClick={() => {
+                      setHistoryPatient(createdPatient)
                       setCreatedPatient(null)
                       setIsModalOpen(false)
                       setNewPatient({ full_name: '', age: '' })
+                      setHistoryModalOpen(true)
                     }}
                     className="w-full px-4 py-3 rounded-xl text-sm font-medium text-bark hover:bg-sand transition-colors border border-line"
                   >

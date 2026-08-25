@@ -1,5 +1,5 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { predictXray, getPatients, generateReport, saveReport, type PredictResponse } from '../../../api'
 import { usePatientStore } from '../../../store/patientStore'
 import { useAuthStore } from '../../../store/authStore'
@@ -37,6 +37,7 @@ const MAX_FILE_SIZE_MB = 10
 const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png']
 
 export default function InteractiveDemo() {
+  const queryClient = useQueryClient()
   const [selectedTypes, setSelectedTypes] = useState<string[]>(ALL_TYPES)
   const [confidenceThreshold, setConfidenceThreshold] = useState<number>(50)
   
@@ -130,6 +131,7 @@ export default function InteractiveDemo() {
     try {
       setIsSavingReport(true)
       await saveReport(selectedPatient.id, mutation.data)
+      queryClient.invalidateQueries({ queryKey: ['reports', selectedPatient.id] })
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (err: any) {
