@@ -216,6 +216,6 @@ def get_report_history(patient_id):
         
     # Fetch all reports for this patient, ordered by newest first
     reports = Report.query.filter_by(patient_id=patient.id).order_by(Report.created_at.desc()).all()
-    
+    print(f"[DEBUG] get_report_history for patient {patient_id} returned {len(reports)} reports")
     return jsonify([r.to_dict() for r in reports]), 200
 

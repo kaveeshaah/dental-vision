@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '^/(predict|health|login|register|patients|report|analytics|chat)(/.*)?$': {
+      '^/(predict|health|login|register|patients|report|analytics|chat|images)(/.*)?$': {
         target: 'http://localhost:5000',
         changeOrigin: true,
         bypass(req) {
