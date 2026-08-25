@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_FOLDER = BASE_DIR / "uploads"
 
 YOLO_MODEL_PATH = Path(os.getenv("YOLO_MODEL_PATH", BASE_DIR / "models" / "best.pt"))
 CLASSIFIER_MODEL_PATH = Path(

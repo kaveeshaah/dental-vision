@@ -35,19 +35,21 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-6">
-          <a href="#" className="text-sm font-semibold text-clay hover:text-clay-light transition-colors">
-            Support
-          </a>
           {user ? (
-            <button
-              onClick={() => {
-                logout()
-                toast.success('Logged out successfully.')
-              }}
-              className="px-6 py-2 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light shadow-md transition-all duration-300"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-moss">
+                {user.username.toLowerCase().startsWith('dr') ? user.username : `Dr. ${user.username}`}
+              </span>
+              <button
+                onClick={() => {
+                  logout()
+                  toast.success('Logged out successfully.')
+                }}
+                className="px-6 py-2 rounded-full text-sm font-semibold text-paper bg-clay hover:bg-clay-light shadow-md transition-all duration-300"
+              >
+                Logout
+              </button>
+            </div>
           ) : (
             <Link
               to="/login"
@@ -87,7 +89,7 @@ export default function Navbar() {
             {user ? (
               <>
                 <span className="w-full text-center py-2.5 text-sm font-semibold text-moss">
-                  Dr. {user.username}
+                  {user.username.toLowerCase().startsWith('dr') ? user.username : `Dr. ${user.username}`}
                 </span>
                 <button
                   onClick={() => {
