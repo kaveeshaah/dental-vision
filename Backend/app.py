@@ -9,8 +9,10 @@ from config import (
     SQLALCHEMY_DATABASE_URI,
     JWT_SECRET_KEY,
     JWT_ACCESS_TOKEN_EXPIRES,
+    UPLOAD_FOLDER,
 )
 from extensions import db, jwt
+import os
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,6 +24,8 @@ logger = logging.getLogger(__name__)
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
+    
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY

@@ -2,6 +2,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { usePatientStore } from '../../store/patientStore'
 import { getReportHistory } from '../../api'
+import ProtectedImage from '../../components/ProtectedImage'
 
 export default function PatientDashboard() {
   const selectedPatient = usePatientStore(state => state.selectedPatient)
@@ -188,7 +189,11 @@ export default function PatientDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {reports.slice(0, 3).map((report) => (
                   <div key={report.id} className="relative rounded-2xl overflow-hidden aspect-video border border-line shadow-sm group cursor-pointer">
-                    <img src="/xray-image.png" alt="Scan" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <ProtectedImage 
+                      imageId={report.image_id} 
+                      alt="Scan" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-bark/80 via-transparent to-transparent"></div>
                     <div className="absolute bottom-3 left-4">
                       <h4 className="font-bold text-sm text-paper">Dental Scan</h4>

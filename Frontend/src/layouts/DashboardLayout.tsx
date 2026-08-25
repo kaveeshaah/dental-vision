@@ -33,11 +33,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="px-6 mb-8">
           <div className="bg-line/40 rounded-xl p-3 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-clay overflow-hidden flex items-center justify-center text-paper font-bold text-lg shadow-inner">
-              {user ? user.username.charAt(0).toUpperCase() : 'H'}
+              {user ? user.username.replace(/^Dr\.?\s*/i, '').charAt(0).toUpperCase() : 'H'}
             </div>
             <div>
               <div className="font-bold text-sm text-moss">
-                Dr. {user ? user.username : 'Henderson'}
+                {user ? (user.username.toLowerCase().startsWith('dr') ? user.username : `Dr. ${user.username}`) : 'Dr. Henderson'}
               </div>
               <div className="text-xs text-bark-soft">Lead Radiologist</div>
             </div>

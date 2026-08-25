@@ -126,6 +126,13 @@ export async function getAnalytics(): Promise<AnalyticsData> {
   return response.data
 }
 
+export async function getScanImage(imageId: string): Promise<string> {
+  const response = await api.get(`/images/${imageId}`, {
+    responseType: 'blob'
+  })
+  return URL.createObjectURL(response.data)
+}
+
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token
   if (token && config.headers) {
