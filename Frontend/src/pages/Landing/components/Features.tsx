@@ -1,96 +1,96 @@
 export default function Features() {
-  const items = [
-    {
-      title: 'Precision Caries Detection',
-      accent: 'sage',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Apical Pathologies & Lesions',
-      accent: 'fern',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Teeth Segmentation & Charting',
-      accent: 'clay',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Restoration & Implant Tracking',
-      accent: 'sage',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Instant Clinical PDF Reports',
-      accent: 'clay',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Secure & HIPAA Compliant',
-      accent: 'fern',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      ),
-    },
-  ]
-
-  const accentClasses: Record<string, string> = {
-    sage: 'text-sage group-hover:bg-sage/10 group-hover:border-sage/30',
-    fern: 'text-fern group-hover:bg-fern/10 group-hover:border-fern/30',
-    clay: 'text-clay group-hover:bg-clay/10 group-hover:border-clay/30',
-  }
-
   return (
-    <section id="features" className="py-20 bg-paper relative border-t border-b border-line">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-sm font-semibold tracking-wider text-clay uppercase mb-3">AI Capabilities</h2>
-          <p className="font-display text-3xl md:text-4xl font-semibold text-moss mb-4">
-            Comprehensive Pathology Detection
+    <section id="features" className="py-24 bg-sand relative border-t border-line">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-moss mb-4">
+            Intelligent Capabilities
+          </h2>
+          <p className="text-bark-soft">
+            Designed to augment, not replace, clinical expertise. Our AI works silently in the background, providing clarity when you need it.
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="p-8 rounded-3xl bg-sand border border-line hover:border-clay/20 hover:bg-paper hover:shadow-lg hover:shadow-moss/5 transition-all duration-300 group relative overflow-hidden"
-            >
-              {/* Icon Container */}
-              <div className={`w-12 h-12 blob bg-paper border border-line flex items-center justify-center mb-6 shadow-sm transition-colors duration-300 ${accentClasses[item.accent]}`}>
-                {item.icon}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Card 1 - Precision Caries Detection (Spans 2 cols) */}
+          <div className="md:col-span-2 p-8 rounded-[2rem] bg-paper border border-line shadow-sm relative overflow-hidden flex flex-col justify-between group">
+            <div className="relative z-10 w-full md:w-1/2">
+              <div className="w-10 h-10 rounded-xl bg-clay text-paper flex items-center justify-center mb-6 shadow-sm">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
               </div>
-
-              {/* Title */}
-              <h3 className="text-lg font-bold text-bark group-hover:text-moss transition-colors duration-200">
-                {item.title}
-              </h3>
+              <h3 className="font-display text-2xl font-semibold text-moss mb-3">Precision Caries Detection</h3>
+              <p className="text-sm text-bark-soft leading-relaxed">
+                Identify interproximal and occlusal lesions with high sensitivity. The system highlights areas of concern with subtle, non-intrusive indicators.
+              </p>
             </div>
-          ))}
+            {/* Fade overlay for image */}
+            <div className="absolute right-0 top-0 bottom-0 w-full md:w-3/5 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/50 to-transparent z-10" />
+              <img 
+                src="/xray-image.png" 
+                alt="AI X-ray analysis" 
+                className="w-full h-full object-cover object-left opacity-90 group-hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+          </div>
+
+          {/* Card 2 - Teeth Segmentation (Spans 1 col) */}
+          <div className="p-8 rounded-[2rem] bg-paper border border-line shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-12">
+              <div className="text-moss">
+                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              </div>
+              <span className="text-[10px] uppercase font-bold tracking-wider bg-fern/20 text-fern px-2.5 py-1 rounded-full">
+                New
+              </span>
+            </div>
+            <div>
+              <h3 className="font-display text-xl font-semibold text-moss mb-2">Teeth Segmentation</h3>
+              <p className="text-sm text-bark-soft leading-relaxed">
+                Automatic numbering and boundary mapping for streamlined charting.
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3 - Bone Level Analysis (Spans 1 col) */}
+          <div className="p-8 rounded-[2rem] bg-paper border border-line shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="text-bark mb-12">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-display text-xl font-semibold text-moss mb-2">Bone Level Analysis</h3>
+              <p className="text-sm text-bark-soft leading-relaxed">
+                Quantify alveolar bone loss automatically for periodontal assessment.
+              </p>
+            </div>
+          </div>
+
+          {/* Card 4 - Seamless Integration (Spans 2 cols, Clay background) */}
+          <div className="md:col-span-2 p-10 rounded-[2rem] bg-gradient-to-br from-[#bc6a44] to-[#995333] shadow-lg flex flex-col justify-center text-paper relative overflow-hidden group">
+            {/* Subtle glow effect in the background */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-colors duration-700" />
+            
+            <div className="relative z-10 max-w-md">
+              <h3 className="font-display text-2xl font-semibold mb-3">Seamless Integration</h3>
+              <p className="text-paper/80 text-sm leading-relaxed mb-6">
+                DentalVision integrates directly into your existing Practice Management Software and PACS, requiring zero change to your daily routine.
+              </p>
+              <a href="#" className="inline-flex items-center text-sm font-bold hover:text-white transition-colors">
+                View Supported Systems
+                <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

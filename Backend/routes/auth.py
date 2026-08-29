@@ -1,7 +1,3 @@
-"""
-POST /register -- create a new clinician account
-POST /login -- authenticate and receive a JWT access token
-"""
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 
@@ -17,12 +13,17 @@ def register():
     if not data:
         return jsonify({"error": "No JSON body provided."}), 400
 
+    import re
     username = data.get("username", "").strip()
     email = data.get("email", "").strip().lower()
     password = data.get("password", "")
 
     if not username or not email or not password:
         return jsonify({"error": "username, email, and password are required."}), 400
+
+    email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(email_regex, email):
+        return jsonify({"error": "Invalid email address format."}), 400
 
     if len(password) < 8:
         return jsonify({"error": "Password must be at least 8 characters."}), 400
@@ -57,8 +58,11 @@ def login():
 
     user = User.query.filter_by(email=email).first()
 
-    if not user or not bcrypt.check_password_hash(user.password_hash, password):
-        return jsonify({"error": "Invalid email or password."}), 401
+    if not user:
+        return jsonify({"error": "Email not found."}), 404
+
+    if not bcrypt.check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Invalid password."}), 401
 
     access_token = create_access_token(identity=str(user.id))
     return jsonify({"user": user.to_dict(), "access_token": access_token}), 200

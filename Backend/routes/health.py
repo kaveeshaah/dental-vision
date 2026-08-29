@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify
 
 from inference.detector import health_check as detector_health
 from inference.classifier import health_check as classifier_health
-from config import YOLO_CONF_THRESHOLD, CLASSIFIER_CONF_THRESHOLD
+from config import YOLO_CONF_THRESHOLD, CLASSIFIER_CONF_THRESHOLD, MODEL_ACCURACY
 
 health_bp = Blueprint("health", __name__)
 
@@ -24,4 +24,5 @@ def health():
             "yolo_conf_threshold": YOLO_CONF_THRESHOLD,
             "classifier_conf_threshold": CLASSIFIER_CONF_THRESHOLD,
         },
+        "model_accuracy": MODEL_ACCURACY,
     }), 200

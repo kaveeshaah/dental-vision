@@ -1,75 +1,77 @@
+import { useQuery } from '@tanstack/react-query'
+import { checkHealth } from '../../../api'
+
 export default function Hero() {
+  const { data: health } = useQuery({
+    queryKey: ['health'],
+    queryFn: checkHealth,
+  })
+
   return (
-    <section className="relative pt-36 pb-20 md:pt-44 md:pb-28 overflow-hidden bg-sand grain">
-      {/* Organic canopy shapes */}
-      <div className="absolute top-[-15%] left-[-12%] w-[45%] h-[45%] blob bg-fern/15 blur-[110px] pointer-events-none z-0 animate-sway" />
-      <div className="absolute top-[10%] right-[-10%] w-[55%] h-[55%] blob-alt bg-clay/10 blur-[140px] pointer-events-none z-0 animate-soft-pulse" />
-      <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] blob bg-sage/10 blur-[100px] pointer-events-none z-0" />
-
+    <section className="relative pt-36 pb-20 md:pt-44 md:pb-28 overflow-hidden bg-sand">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-paper border border-line mb-8 animate-fade-in shadow-sm">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fern opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-sage"></span>
-            </span>
-            <span className="text-xs font-semibold tracking-wider text-bark uppercase">
-              Grown for Clinical Care
-            </span>
-            <span className="text-[10px] text-clay bg-clay/10 px-1.5 py-0.5 rounded-full font-bold border border-clay/20">
-              YOLO v8
-            </span>
-          </div>
-
-          {/* Heading */}
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-moss mb-6 leading-[1.1]">
-            A gentler way to read{' '}
-            <span className="italic text-clay glow-text">
-              panoramic X-rays
-            </span>
-          </h1>
-
-          <p className="text-base md:text-lg text-bark-soft max-w-2xl mx-auto mb-10 leading-relaxed">
-            DentalVision pairs AI pathology detection with a calm, human interface — so
-            clinicians spend less time squinting at scans and more time with patients.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <a
-              href="#demo"
-              className="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-paper bg-clay hover:bg-clay-light shadow-lg shadow-clay/20 hover:shadow-clay/30 transition-all duration-300 transform scale-100 hover:scale-[1.03] active:scale-[0.97] text-center"
-            >
-              Try Interactive Demo
-            </a>
-            <a
-              href="#features"
-              className="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-moss bg-paper hover:bg-sand border border-line shadow-sm transition-all duration-300 text-center"
-            >
-              Explore Capabilities
-            </a>
-          </div>
-
-          {/* Metrics Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto pt-8 border-t border-line">
-            <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
-              <div className="font-display text-3xl font-semibold text-sage tracking-tight mb-1">98.4%</div>
-              <div className="text-xs uppercase font-semibold text-bark-soft/60 tracking-wider">Model Accuracy</div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+          
+          {/* Left Column - Text Content */}
+          <div className="max-w-xl">
+            <div className="mb-6">
+              <span className="text-xs font-bold tracking-widest text-sage uppercase">
+                NEXT-GEN RADIOLOGY
+              </span>
             </div>
-            <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
-              <div className="font-display text-3xl font-semibold text-clay tracking-tight mb-1">&lt; 3.0s</div>
-              <div className="text-xs uppercase font-semibold text-bark-soft/60 tracking-wider">Analysis Speed</div>
-            </div>
-            <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
-              <div className="font-display text-3xl font-semibold text-moss tracking-tight mb-1">10+</div>
-              <div className="text-xs uppercase font-semibold text-bark-soft/60 tracking-wider">Pathologies Detected</div>
-            </div>
-            <div className="p-4 rounded-2xl bg-paper border border-line shadow-sm">
-              <div className="font-display text-3xl font-semibold text-fern tracking-tight mb-1">HIPAA</div>
-              <div className="text-xs uppercase font-semibold text-bark-soft/60 tracking-wider">Compliant Safety</div>
+
+            <h1 className="font-display text-5xl md:text-6xl lg:text-[72px] font-semibold tracking-tight text-moss mb-6 leading-[1.05]">
+              A gentler way to read panoramic X-rays
+            </h1>
+
+            <p className="text-lg md:text-xl text-bark-soft mb-10 leading-relaxed font-light">
+              Empower your clinical decisions with AI-driven insights. 
+              DentalVision reduces diagnostic fatigue while increasing 
+              precision, blending seamlessly into your modern workflow.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <a
+                href="#demo"
+                className="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-paper bg-clay hover:bg-clay-light shadow-lg shadow-clay/20 hover:shadow-clay/30 transition-all duration-300 text-center"
+              >
+                Try Interactive Demo
+              </a>
+              <a
+                href="#features"
+                className="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-clay bg-transparent border-2 border-clay hover:bg-clay/5 transition-all duration-300 text-center"
+              >
+                Explore Capabilities
+              </a>
             </div>
           </div>
+
+          {/* Right Column - Image & Floating Card */}
+          <div className="relative">
+            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-moss/10 border border-line">
+              <img 
+                src="/hero-image.png" 
+                alt="Modern panoramic X-ray machine in a warm clinic" 
+                className="w-full h-auto object-cover object-center max-h-[600px]"
+              />
+              
+              {/* Floating Status Card */}
+              <div className="absolute bottom-6 left-6 glass rounded-2xl p-4 pr-12 flex items-center gap-4 shadow-lg shadow-moss/5 animate-fade-in border border-paper/40">
+                <div className="w-8 h-8 rounded-full bg-fern/20 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-fern flex items-center justify-center">
+                    <svg className="w-3 h-3 text-paper" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-moss">Analysis Complete</div>
+                  <div className="text-xs text-bark-soft mt-0.5">Patient: Jane Doe • 1.2 sec processing</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

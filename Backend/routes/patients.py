@@ -43,8 +43,15 @@ def create_patient():
         return jsonify({"error": "Missing required fields (full_name, age)"}), 400
         
     if not custom_id:
-        custom_id = f"PT-{random.randint(1000, 9999)}"
-        
+        last_patient = Patient.query.order_by(Patient.id.desc()).first()
+        if last_patient and last_patient.custom_id and last_patient.custom_id.startswith("PT-"):
+            try:
+                last_num = int(last_patient.custom_id.split("-")[1])
+                custom_id = f"PT-{last_num + 1}"
+            except (ValueError, IndexError):
+                custom_id = f"PT-{last_patient.id + 1000}"
+        else:
+            custom_id = "PT-1001"
     try:
         new_patient = Patient(
             doctor_id=current_user_id,
@@ -56,6 +63,24 @@ def create_patient():
         db.session.add(new_patient)
         db.session.commit()
         return jsonify(new_patient.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+@patients_bp.route("/<int:patient_id>", methods=["DELETE"])
+@jwt_required()
+def delete_patient(patient_id):
+    current_user_id = get_jwt_identity()
+    patient = Patient.query.filter_by(id=patient_id, doctor_id=current_user_id).first()
+    
+    if not patient:
+        return jsonify({"error": "Patient not found or unauthorized"}), 404
+        
+    try:
+        db.session.delete(patient)
+        db.session.commit()
+        return jsonify({"message": "Patient deleted successfully"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
